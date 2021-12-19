@@ -1,0 +1,17 @@
+.container {
+  margin-top: 30px;
+}
+
+.title {
+  text-align: center;
+  font-size: 30px;
+  text-transform: uppercase;
+}
+
+.btn {
+  text-align: center;
+}
+
+.form span {
+  color: red;
+}
