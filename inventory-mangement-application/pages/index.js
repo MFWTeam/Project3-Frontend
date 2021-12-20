@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Button, Modal, Form } from "react-bootstrap";
+import { Button, Modal, Form, Link } from "react-bootstrap";
 import Layout from "../components/Layout";
 import axios from "axios";
 import styles from "../styles/Home.module.css";
@@ -18,7 +18,7 @@ export default function Home() {
   const [showUser, setShowUser] = useState(false);
   const handleCloseUser = () => setShowUser(false);
   const handleShowUser = () => setShowUser(true);
-  // End Model Store
+  // End Model User
 
   // Start Model Role
   const [showRole, setShowRole] = useState(false);
@@ -117,7 +117,6 @@ export default function Home() {
             <Button
               variant="primary"
               className={styles.btn}
-              onClick={handleShow}
             >
               Store
             </Button>
