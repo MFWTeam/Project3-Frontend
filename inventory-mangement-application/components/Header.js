@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Navbar, Container, Nav, Button } from "react-bootstrap";
+import styles from "../styles/Header.module.css";
 
 export default function Header() {
   const [isLoggedIn, setIsLoggedIn] = useState("none");
@@ -18,12 +19,12 @@ export default function Header() {
   }, [token]);
 
   return (
-    <div>
-      <Navbar bg="light" expand="lg">
+    <>
+      <Navbar bg="light" expand="lg" className={styles.background}>
         <Container>
-          <Navbar.Brand href="#home">React-Bootstrap</Navbar.Brand>
+          <Navbar.Brand href="#home">MFWProject</Navbar.Brand>
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
-          <Navbar.Collapse id="basic-navbar-nav">
+          <Navbar.Collapse className="basic-navbar-nav">
             <Nav className="me-auto">
               <Nav.Link href="/">Home</Nav.Link>
               <Nav.Link href="/about">About</Nav.Link>
@@ -32,6 +33,7 @@ export default function Header() {
               variant="outline-success"
               style={{ display: isLoggedIn }}
               href="/signIn"
+              className={styles.btn}
             >
               Sign In
             </Button>
@@ -39,6 +41,7 @@ export default function Header() {
               variant="outline-success"
               style={{ display: isLoggedOut }}
               href="/signIn"
+              className={styles.btn}
               onClick={() => {
                 localStorage.removeItem("token");
               }}
@@ -48,6 +51,6 @@ export default function Header() {
           </Navbar.Collapse>
         </Container>
       </Navbar>
-    </div>
+    </>
   );
 }
