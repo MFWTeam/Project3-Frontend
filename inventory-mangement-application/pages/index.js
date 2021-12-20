@@ -4,9 +4,10 @@ import Layout from "../components/Layout";
 import axios from "axios";
 import styles from "../styles/Home.module.css";
 
-export default function Home({ users, roles }) {
+export default function Home() {
   // Stores data
   const [stores, setStores] = useState([]);
+  const [isStoreChanged, setIsStoreChanged] = useState(false);
   // Start Model Store
   const [show, setShow] = useState(false);
   const handleClose = () => setShow(false);
@@ -19,17 +20,50 @@ export default function Home({ users, roles }) {
   const handleShowUser = () => setShowUser(true);
   // End Model Store
 
+  // Start Model Role
+  const [showRole, setShowRole] = useState(false);
+  const handleCloseRole = () => setShowRole(false);
+  const handleShowRole = () => setShowRole(true);
+  // End Model Role
+
   const [name, setName] = useState("");
   const [managerName, setManagerName] = useState("");
 
   // Start User Data
+  const [users, setUser] = useState([]);
   const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
   const [role, setRole] = useState("");
+  const [isUserChanged, setIsUserChanged] = useState(false);
   // End User Data
+
+  // Start Role Data
+  const [addRole, setAddRole] = useState("");
+  const [roles, setRoles] = useState([]);
+  const [isRoleChanged, setIsRoleChanged] = useState(false);
+  // End Role Data
+
+  function saveRole() {
+    axios
+      .post("http://localhost:5000/roles/save", {
+        name: addRole,
+      })
+      .then((data) => {
+        if (data) {
+          setIsRoleChanged(true);
+        }
+      })
+      .catch((error) => console.log(error));
+  }
+
+  useEffect(async () => {
+    const resRole = await fetch("http://localhost:5000/roles/show");
+    const roles = await resRole.json();
+    setRoles(roles);
+  }, [isRoleChanged]);
 
   function saveUser() {
     axios
@@ -43,18 +77,23 @@ export default function Home({ users, roles }) {
       })
       .then((data) => {
         if (data) {
-          Router.push("/signIn");
+          setIsUserChanged(true);
         }
       })
       .catch((error) => console.log(error));
   }
 
-  useEffect(() => {
-    fetch("http://localhost:5000/stores/show")
-      .then((response) => response.json())
-      .then((data) => setStores(data))
-      .catch((error) => console.log(error));
-  }, [stores]);
+  useEffect(async () => {
+    const resUsers = await fetch("http://localhost:5000/users/show");
+    const users = await resUsers.json();
+    setUser(users);
+  }, [isUserChanged]);
+
+  useEffect(async () => {
+    const resStores = await fetch("http://localhost:5000/stores/show");
+    const stores = await resStores.json();
+    setStores(stores);
+  }, [isStoreChanged]);
 
   function addStore() {
     axios
@@ -64,7 +103,7 @@ export default function Home({ users, roles }) {
       })
       .then((data) => {
         if (data) {
-          Router.push("/");
+          setIsStoreChanged(true);
         }
       })
       .catch((error) => console.log(error));
@@ -80,30 +119,34 @@ export default function Home({ users, roles }) {
               className={styles.btn}
               onClick={handleShow}
             >
-              Add Store
-            </Button>
-            <Button variant="primary" className={styles.btn}>
-              Add Item
+              Store
             </Button>
             <Button
               variant="primary"
               className={styles.btn}
               onClick={handleShowUser}
             >
-              Add User
+              User
+            </Button>
+            <Button
+              variant="primary"
+              className={styles.btn}
+              onClick={handleShowRole}
+            >
+              Role
             </Button>
           </div>
-          <div className={styles.grid}>
+          {/* <div className={styles.grid}>
             {stores &&
               stores.map((store) => {
                 return (
                   <a href="" className={styles.card}>
                     <h2>{store.name}</h2>
-                    <p>{store.managerName}</p>
+                    <h3>{store.managerName}</h3>
                   </a>
                 );
               })}
-          </div>
+          </div> */}
         </main>
       </div>
 
@@ -140,11 +183,16 @@ export default function Home({ users, roles }) {
           </Form>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={handleClose}>
+          <Button
+            variant="secondary"
+            onClick={handleClose}
+            className={styles.btnClose}
+          >
             Close
           </Button>
           <Button
             variant="primary"
+            className={styles.btnAdd}
             onClick={() => {
               addStore();
               handleClose();
@@ -231,6 +279,7 @@ export default function Home({ users, roles }) {
         <Modal.Footer>
           <Button
             variant="secondary"
+            className={styles.btnClose}
             onClick={() => {
               handleCloseUser();
             }}
@@ -239,6 +288,7 @@ export default function Home({ users, roles }) {
           </Button>
           <Button
             variant="primary"
+            className={styles.btnAdd}
             onClick={() => {
               saveUser();
               handleCloseUser();
@@ -248,18 +298,55 @@ export default function Home({ users, roles }) {
           </Button>
         </Modal.Footer>
       </Modal>
+
+      <Modal show={showRole} onHide={handleCloseRole}>
+        <Modal.Header closeButton>
+          <Modal.Title>Add Role</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Form className={styles.form}>
+            <Form.Group className="mb-3">
+              <Form.Label>
+                Role Name<span>*</span>
+              </Form.Label>
+              <Form.Control
+                type="text"
+                placeholder="Enter name"
+                autoComplete="off"
+                onChange={(e) => setAddRole(e.target.value)}
+              />
+            </Form.Group>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button
+            variant="secondary"
+            className={styles.btnClose}
+            onClick={() => {
+              handleCloseRole();
+            }}
+          >
+            Close
+          </Button>
+          <Button
+            variant="primary"
+            className={styles.btnAdd}
+            onClick={() => {
+              saveRole();
+              handleCloseRole();
+            }}
+          >
+            Add Role
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </Layout>
   );
 }
 
-export async function getStaticProps() {
-  const resUsers = await fetch("http://localhost:5000/users/show");
-  const users = await resUsers.json();
+// export async function getServerSideProps() {
 
-  const resRole = await fetch("http://localhost:5000/roles/show");
-  const roles = await resRole.json();
-
-  return {
-    props: { users, roles },
-  };
-}
+//   return {
+//     props: { users, roles },
+//   };
+// }
