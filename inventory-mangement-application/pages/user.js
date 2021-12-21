@@ -39,7 +39,7 @@ const countriesTable = () => {
         })
         .then((data) => {
           if (data) {
-            setIsUserChanged(true);
+            setIsUserChanged(!isUserChanged);
             setUserName("");
             setEmail("");
             setPassword("");
@@ -61,7 +61,7 @@ const countriesTable = () => {
         })
         .then((data) => {
           if (data) {
-            setIsUserChanged(true);
+            setIsUserChanged(!isUserChanged);
           }
         })
         .catch((error) => console.log(error));
@@ -72,6 +72,7 @@ const countriesTable = () => {
     fetch("http://localhost:5000/users/show/" + id)
       .then((response) => response.json())
       .then((data) => {
+        console.log(data);
         setUserName(data[0].name);
         setEmail(data[0].email);
         setPassword(data[0].password);
@@ -91,7 +92,7 @@ const countriesTable = () => {
       })
       .then((data) => {
         if (data) {
-          setIsUserChanged(true);
+          setIsUserChanged(!isUserChanged);
         }
       })
       .catch((error) => console.log(error));
@@ -173,21 +174,41 @@ const countriesTable = () => {
               </Col>
 
               <Col>
-                <Button
-                  variant="primary"
-                  className={styles.btnAdd}
-                  onClick={() => {
-                    saveUser();
-                  }}
-                >
-                  Add User
-                </Button>
+                <Row>
+                  <Col>
+                    <Button
+                      variant="primary"
+                      className={styles.btnAdd}
+                      onClick={() => {
+                        saveUser();
+                      }}
+                    >
+                      Add User
+                    </Button>
+                  </Col>
+                  <Col>
+                    <Button
+                      variant="primary"
+                      className={styles.btnAdd}
+                      onClick={() => {
+                        setUserName("");
+                        setEmail("");
+                        setPassword("");
+                        setPhone("");
+                        setAddress("");
+                        setId("");
+                      }}
+                    >
+                      Clear Data
+                    </Button>
+                  </Col>
+                </Row>
               </Col>
             </Row>
             <hr />
             <Row>
               <Col>
-                <Table striped bordered hover>
+                <Table striped bordered hover className={styles.table}>
                   <thead>
                     <tr>
                       <th>Name</th>
