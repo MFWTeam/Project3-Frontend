@@ -77,7 +77,7 @@ export default function Home() {
 
   return (
     <Layout>
-      <div className={styles.container}>
+      {/* <div className={styles.container}>
         <main className={styles.main}>
           <div className={styles.grid}>
             <Link href="/store">
@@ -101,6 +101,37 @@ export default function Home() {
             </Button>
           </div>
         </main>
+      </div> */}
+      <div className={styles.body}>
+        <div className={styles.container}>
+          <Link href="/store">
+            <div className={styles.card}>
+              <div className={styles.box}>
+                <div className={styles.content}>
+                  <h3>Store</h3>
+                </div>
+              </div>
+            </div>
+          </Link>
+
+          <Link href="/user">
+            <div className={styles.card}>
+              <div className={styles.box}>
+                <div className={styles.content}>
+                  <h3>User</h3>
+                </div>
+              </div>
+            </div>
+          </Link>
+
+          <div className={styles.card} onClick={handleShowRole}>
+            <div className={styles.box}>
+              <div className={styles.content}>
+                <h3>Role</h3>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <Modal show={showRole} onHide={handleCloseRole}>
@@ -147,10 +178,3 @@ export default function Home() {
     </Layout>
   );
 }
-
-// export async function getServerSideProps() {
-
-//   return {
-//     props: { users, roles },
-//   };
-// }

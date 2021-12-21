@@ -14,6 +14,7 @@ import {
 import { VscTrash } from "react-icons/vsc";
 import { FaRegEdit } from "react-icons/fa";
 import { RiSlideshowLine } from "react-icons/ri";
+import SweetAlert from "react-bootstrap-sweetalert";
 
 export default function store() {
   // Stores data
@@ -28,10 +29,12 @@ export default function store() {
   const [show, setShow] = useState(false);
   // End Model Store
 
+  // Deleted Id
+  const [deletedId, setDeletedId] = useState("");
+  const [deletedStoreId, setDeletedStoreId] = useState("");
+
   // Start Product Data
   const [products, setProducts] = useState([]);
-  const [isProductChanged, setIsProductChanged] = useState(false);
-
   const [productName, setProductName] = useState("");
   const [productBarcode, setProductBarcode] = useState("");
   const [productPrice, setProductPrice] = useState(0);
@@ -43,6 +46,11 @@ export default function store() {
   const [managerName, setManagerName] = useState("");
   const [updateId, setId] = useState("");
   // End Store Data
+
+  // Start Alert
+  const [display, setDisplay] = useState(false);
+  const [displayStoreDelete, setDisplayStoreDelete] = useState(false);
+  // End Alert
 
   // Start User Data
   const [users, setUser] = useState([]);
@@ -103,7 +111,6 @@ export default function store() {
   }
 
   function updateStore(id) {
-    console.log(id);
     fetch("http://localhost:5000/stores/show/" + id)
       .then((response) => response.json())
       .then((data) => {
@@ -116,14 +123,29 @@ export default function store() {
       });
   }
 
+  function updateProduct(id) {
+    fetch("http://localhost:5000/products/show/" + id)
+      .then((response) => response.json())
+      .then((data) => {
+        setProductName(data[0].name);
+        setProductBarcode(data[0].barcode);
+        setProductPrice(data[0].price);
+        setProductQuantity(data[0].quantity);
+        setId(data[0]._id);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }
+
   function deleteStore(id) {
-    console.log(id);
     axios
       .put("http://localhost:5000/stores/delete/" + id, {
         isDeleted: true,
       })
       .then((data) => {
         if (data) {
+          setDisplayStoreDelete(false);
           setIsStoreChanged(true);
         }
       })
@@ -134,8 +156,11 @@ export default function store() {
     if (updateId) {
       axios
         .put("http://localhost:5000/products/update/" + updateId, {
-          name: name,
-          managerName: managerName,
+          name: productName,
+          barcode: productBarcode,
+          price: productPrice,
+          quantity: productQuantity,
+          storeName: defaultStoreName,
         })
         .then((data) => {
           if (data) {
@@ -143,6 +168,7 @@ export default function store() {
             setProductBarcode("");
             setProductPrice("");
             setProductQuantity("");
+            getProducts(defaultStoreName);
           }
         })
         .catch((error) => console.log(error));
@@ -161,10 +187,25 @@ export default function store() {
             setProductBarcode("");
             setProductPrice(0);
             setProductQuantity(0);
+            getProducts(defaultStoreName);
           }
         })
         .catch((error) => console.log(error));
     }
+  }
+
+  function deleteProduct(id) {
+    axios
+      .put("http://localhost:5000/products/delete/" + id, {
+        isDeleted: true,
+      })
+      .then((data) => {
+        if (data) {
+          setDisplay(false);
+          getProducts(defaultStoreName);
+        }
+      })
+      .catch((error) => console.log(error));
   }
 
   return (
@@ -254,7 +295,8 @@ export default function store() {
                               <Button
                                 className={styles.btnEdit}
                                 onClick={() => {
-                                  deleteStore(store._id);
+                                  setDisplayStoreDelete(true);
+                                  setDeletedStoreId(store._id);
                                 }}
                               >
                                 <VscTrash className={styles.VscTrash} />
@@ -267,8 +309,6 @@ export default function store() {
                                   setDefaultStoreName(store.name);
                                   getProducts(store.name);
                                   setShow(true);
-
-                                  // showStore(store._id);
                                 }}
                               >
                                 <RiSlideshowLine
@@ -294,7 +334,7 @@ export default function store() {
       >
         <Modal.Header closeButton>
           <Modal.Title id="example-modal-sizes-title-lg">
-            Show Products of Store
+            Show Products of {defaultStoreName} Store
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
@@ -309,6 +349,7 @@ export default function store() {
                     type="text"
                     placeholder="Enter store name"
                     autoComplete="off"
+                    value={productName}
                     onChange={(e) => setProductName(e.target.value)}
                   />
                 </Form.Group>
@@ -322,6 +363,7 @@ export default function store() {
                     type="text"
                     placeholder="Enter product barcode"
                     autoComplete="off"
+                    value={productBarcode}
                     onChange={(e) => setProductBarcode(e.target.value)}
                   />
                 </Form.Group>
@@ -335,6 +377,7 @@ export default function store() {
                     type="text"
                     placeholder="Enter product price"
                     autoComplete="off"
+                    value={productPrice}
                     onChange={(e) => setProductPrice(e.target.value)}
                   />
                 </Form.Group>
@@ -350,6 +393,7 @@ export default function store() {
                     type="text"
                     placeholder="Enter store quantity"
                     autoComplete="off"
+                    value={productQuantity}
                     onChange={(e) => setProductQuantity(e.target.value)}
                   />
                 </Form.Group>
@@ -409,14 +453,18 @@ export default function store() {
                                   updateStore(store._id);
                                 }}
                               >
-                                <FaRegEdit className={styles.FaRegEdit} />
+                                <FaRegEdit
+                                  className={styles.FaRegEdit}
+                                  onClick={() => updateProduct(product._id)}
+                                />
                               </Button>
                             </td>
                             <td>
                               <Button
                                 className={styles.btnEdit}
                                 onClick={() => {
-                                  deleteStore(store._id);
+                                  setDeletedId(product._id);
+                                  setDisplay(true);
                                 }}
                               >
                                 <VscTrash className={styles.VscTrash} />
@@ -432,6 +480,32 @@ export default function store() {
           </Container>
         </Modal.Body>
       </Modal>
+      <SweetAlert
+        warning
+        show={display}
+        showCancel
+        confirmBtnText="Yes, delete it!"
+        confirmBtnBsStyle="danger"
+        title="Are you sure?"
+        onConfirm={() => deleteProduct(deletedId)}
+        onCancel={() => setDisplay(false)}
+        focusCancelBtn
+      >
+        You will not be able to recover this product!
+      </SweetAlert>
+      <SweetAlert
+        warning
+        show={displayStoreDelete}
+        showCancel
+        confirmBtnText="Yes, delete it!"
+        confirmBtnBsStyle="danger"
+        title="Are you sure?"
+        onConfirm={() => deleteStore(deletedStoreId)}
+        onCancel={() => setDisplayStoreDelete(false)}
+        focusCancelBtn
+      >
+        You will not be able to recover this store!
+      </SweetAlert>
     </Layout>
   );
 }
