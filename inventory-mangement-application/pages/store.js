@@ -13,17 +13,30 @@ import {
 } from "react-bootstrap";
 import { VscTrash } from "react-icons/vsc";
 import { FaRegEdit } from "react-icons/fa";
+import { RiSlideshowLine } from "react-icons/ri";
 
 export default function store() {
   // Stores data
   const [stores, setStores] = useState([]);
   const [isStoreChanged, setIsStoreChanged] = useState(false);
 
+  // Default Store Name
+  const [defaultStoreName, setDefaultStoreName] = useState("");
+  // End Store Name
+
   // Start Model Store
   const [show, setShow] = useState(false);
-  const handleClose = () => setShow(false);
-  const handleShow = () => setShow(true);
   // End Model Store
+
+  // Start Product Data
+  const [products, setProducts] = useState([]);
+  const [isProductChanged, setIsProductChanged] = useState(false);
+
+  const [productName, setProductName] = useState("");
+  const [productBarcode, setProductBarcode] = useState("");
+  const [productPrice, setProductPrice] = useState(0);
+  const [productQuantity, setProductQuantity] = useState(0);
+  // End Product Data
 
   // Start Store Data
   const [name, setName] = useState("");
@@ -48,6 +61,13 @@ export default function store() {
     setStores(stores);
   }, [isStoreChanged]);
 
+  function getProducts(name) {
+    fetch("http://localhost:5000/products/show/byName/" + name)
+      .then((response) => response.json())
+      .then((data) => setProducts(data))
+      .catch((err) => console.log(err));
+  }
+
   function addStore() {
     if (updateId) {
       axios
@@ -57,7 +77,7 @@ export default function store() {
         })
         .then((data) => {
           if (data) {
-            setIsStoreChanged(true);
+            setIsStoreChanged(!isStoreChanged);
             setName("");
             setManagerName("default");
             setId("");
@@ -72,7 +92,7 @@ export default function store() {
         })
         .then((data) => {
           if (data) {
-            setIsStoreChanged(true);
+            setIsStoreChanged(!isStoreChanged);
             setName("");
             setManagerName("default");
             setId("");
@@ -110,6 +130,43 @@ export default function store() {
       .catch((error) => console.log(error));
   }
 
+  function addProduct() {
+    if (updateId) {
+      axios
+        .put("http://localhost:5000/products/update/" + updateId, {
+          name: name,
+          managerName: managerName,
+        })
+        .then((data) => {
+          if (data) {
+            setProductName("");
+            setProductBarcode("");
+            setProductPrice("");
+            setProductQuantity("");
+          }
+        })
+        .catch((error) => console.log(error));
+    } else {
+      axios
+        .post("http://localhost:5000/products/save", {
+          name: productName,
+          barcode: productBarcode,
+          price: productPrice,
+          quantity: productQuantity,
+          storeName: defaultStoreName,
+        })
+        .then((data) => {
+          if (data) {
+            setProductName("");
+            setProductBarcode("");
+            setProductPrice(0);
+            setProductQuantity(0);
+          }
+        })
+        .catch((error) => console.log(error));
+    }
+  }
+
   return (
     <Layout>
       <div className={styles.container}>
@@ -135,11 +192,18 @@ export default function store() {
                   <Form.Label>
                     Manager Name<span>*</span>
                   </Form.Label>
-                  <Form.Select onChange={(e) => setManagerName(e.target.value)}>
+                  <Form.Select
+                    value={managerName}
+                    onChange={(e) => setManagerName(e.target.value)}
+                  >
                     <option value="default">Choose a Manager</option>
                     {users &&
-                      users.map((user) => {
-                        return <option value={user.name}>{user.name}</option>;
+                      users.map((user, i) => {
+                        return (
+                          <option key={i} value={user.name}>
+                            {user.name}
+                          </option>
+                        );
                       })}
                   </Form.Select>
                 </Form.Group>
@@ -159,13 +223,14 @@ export default function store() {
             <hr></hr>
             <Row>
               <Col>
-                <Table striped bordered hover>
+                <Table striped bordered hover className={styles.table}>
                   <thead>
                     <tr>
                       <th>Store Name</th>
                       <th>Manager Name</th>
                       <th>Edit</th>
                       <th>Delete</th>
+                      <th>Show Store</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -195,6 +260,22 @@ export default function store() {
                                 <VscTrash className={styles.VscTrash} />
                               </Button>
                             </td>
+                            <td>
+                              <Button
+                                className={styles.btnEdit}
+                                onClick={() => {
+                                  setDefaultStoreName(store.name);
+                                  getProducts(store.name);
+                                  setShow(true);
+
+                                  // showStore(store._id);
+                                }}
+                              >
+                                <RiSlideshowLine
+                                  className={styles.RiSlideshowLine}
+                                />
+                              </Button>
+                            </td>
                           </tr>
                         );
                       })}
@@ -205,6 +286,152 @@ export default function store() {
           </Container>
         </main>
       </div>
+      <Modal
+        size="lg"
+        show={show}
+        onHide={() => setShow(false)}
+        aria-labelledby="example-modal-sizes-title-lg"
+      >
+        <Modal.Header closeButton>
+          <Modal.Title id="example-modal-sizes-title-lg">
+            Show Products of Store
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Container>
+            <Row>
+              <Col>
+                <Form.Group className="mb-3">
+                  <Form.Label>
+                    Name<span>*</span>
+                  </Form.Label>
+                  <Form.Control
+                    type="text"
+                    placeholder="Enter store name"
+                    autoComplete="off"
+                    onChange={(e) => setProductName(e.target.value)}
+                  />
+                </Form.Group>
+              </Col>
+              <Col>
+                <Form.Group className="mb-3">
+                  <Form.Label>
+                    Barcode<span>*</span>
+                  </Form.Label>
+                  <Form.Control
+                    type="text"
+                    placeholder="Enter product barcode"
+                    autoComplete="off"
+                    onChange={(e) => setProductBarcode(e.target.value)}
+                  />
+                </Form.Group>
+              </Col>
+              <Col>
+                <Form.Group className="mb-3">
+                  <Form.Label>
+                    Price<span>*</span>
+                  </Form.Label>
+                  <Form.Control
+                    type="text"
+                    placeholder="Enter product price"
+                    autoComplete="off"
+                    onChange={(e) => setProductPrice(e.target.value)}
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+            <Row>
+              <Col>
+                <Form.Group className="mb-3">
+                  <Form.Label>
+                    Quantity<span>*</span>
+                  </Form.Label>
+                  <Form.Control
+                    type="text"
+                    placeholder="Enter store quantity"
+                    autoComplete="off"
+                    onChange={(e) => setProductQuantity(e.target.value)}
+                  />
+                </Form.Group>
+              </Col>
+              <Col>
+                <Form.Group className="mb-3">
+                  <Form.Label>
+                    Store Name<span>*</span>
+                  </Form.Label>
+                  <Form.Control
+                    type="text"
+                    value={defaultStoreName}
+                    placeholder="Enter store quantity"
+                    disabled
+                    autoComplete="off"
+                  />
+                </Form.Group>
+              </Col>
+              <Col>
+                <Button
+                  className={styles.btnSave}
+                  onClick={() => {
+                    addProduct();
+                  }}
+                >
+                  Save
+                </Button>
+              </Col>
+            </Row>
+            <hr></hr>
+            <Row>
+              <Col>
+                <Table striped bordered hover className={styles.table}>
+                  <thead>
+                    <tr>
+                      <th>Product Name</th>
+                      <th>Barcode</th>
+                      <th>Price</th>
+                      <th>Quantity</th>
+                      <th>Edit</th>
+                      <th>Delete</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {products &&
+                      products.map((product) => {
+                        return (
+                          <tr>
+                            <td>{product.name}</td>
+                            <td>{product.barcode}</td>
+                            <td>{product.price}</td>
+                            <td>{product.quantity}</td>
+                            <td>
+                              <Button
+                                className={styles.btnEdit}
+                                onClick={() => {
+                                  updateStore(store._id);
+                                }}
+                              >
+                                <FaRegEdit className={styles.FaRegEdit} />
+                              </Button>
+                            </td>
+                            <td>
+                              <Button
+                                className={styles.btnEdit}
+                                onClick={() => {
+                                  deleteStore(store._id);
+                                }}
+                              >
+                                <VscTrash className={styles.VscTrash} />
+                              </Button>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                  </tbody>
+                </Table>
+              </Col>
+            </Row>
+          </Container>
+        </Modal.Body>
+      </Modal>
     </Layout>
   );
 }
