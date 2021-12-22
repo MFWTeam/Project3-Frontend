@@ -50,6 +50,9 @@ export default function store() {
   // Start Alert
   const [display, setDisplay] = useState(false);
   const [displayStoreDelete, setDisplayStoreDelete] = useState(false);
+  const [displayStoreUpdate, setDisplayStoreUpdate] = useState(false);
+  const [errorDisplay, setErrorDisplay] = useState(false);
+
   // End Alert
 
   // Start User Data
@@ -121,6 +124,24 @@ export default function store() {
       .catch((error) => {
         console.log(error);
       });
+  }
+
+  useEffect(() => {
+    checkStoreUpdate(defaultStoreName);
+  }, [updateId])
+
+  async function checkStoreUpdate(name) {
+    fetch("http://localhost:5000/products/show/byName/" + name)
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.length > 0) {
+          setDisplayStoreUpdate(true);
+        } else {
+          updateStore(updateId);
+          setDisplayStoreUpdate(false)
+        }
+      })
+      .catch((err) => console.log(err));
   }
 
   function updateProduct(id) {
@@ -208,6 +229,23 @@ export default function store() {
       .catch((error) => console.log(error));
   }
 
+  function checkStoreDelete(name) {
+    fetch("http://localhost:5000/products/show/byName/" + name)
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data)
+        if (data.length > 0) {
+          setErrorDisplay(true);
+          setDisplayStoreDelete(false)
+        } else {
+          deleteStore(deletedStoreId);
+          setErrorDisplay(false);
+          setDisplayStoreDelete(false)
+        }
+      })
+      .catch((err) => console.log(err));
+  }
+
   return (
     <Layout>
       <div className={styles.container}>
@@ -260,6 +298,19 @@ export default function store() {
                   Add Store
                 </Button>
               </Col>
+              <Col>
+                <Button
+                  variant="primary"
+                  className={styles.btnAdd}
+                  onClick={() => {
+                    setName("");
+                    setManagerName("default");
+                    setId("");
+                  }}
+                >
+                  Clear Data
+                </Button>
+              </Col>
             </Row>
             <hr></hr>
             <Row>
@@ -285,7 +336,8 @@ export default function store() {
                               <Button
                                 className={styles.btnEdit}
                                 onClick={() => {
-                                  updateStore(store._id);
+                                  setDefaultStoreName(store.name);
+                                  setId(store._id);
                                 }}
                               >
                                 <FaRegEdit className={styles.FaRegEdit} />
@@ -297,6 +349,7 @@ export default function store() {
                                 onClick={() => {
                                   setDisplayStoreDelete(true);
                                   setDeletedStoreId(store._id);
+                                  setDefaultStoreName(store.name);
                                 }}
                               >
                                 <VscTrash className={styles.VscTrash} />
@@ -500,12 +553,27 @@ export default function store() {
         confirmBtnText="Yes, delete it!"
         confirmBtnBsStyle="danger"
         title="Are you sure?"
-        onConfirm={() => deleteStore(deletedStoreId)}
+        onConfirm={() => checkStoreDelete(defaultStoreName)}
         onCancel={() => setDisplayStoreDelete(false)}
         focusCancelBtn
       >
         You will not be able to recover this store!
       </SweetAlert>
+      <SweetAlert
+        danger
+        show={errorDisplay}
+        title="You Can not delete this store !!!"
+        onConfirm={() => setErrorDisplay(false)}
+      >
+      </SweetAlert>
+      <SweetAlert
+        danger
+        show={displayStoreUpdate}
+        title="You Can not update this store !!!"
+        onConfirm={() => setDisplayStoreUpdate(false)}
+      >
+      </SweetAlert>
     </Layout>
-  );
-}
+  )
+};
+
