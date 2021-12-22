@@ -1,10 +1,12 @@
 import Layout from "../components/Layout";
 import { Table, Container, Row, Col, Button, Form } from "react-bootstrap";
 import styles from "../styles/user.module.css";
-import { useEffect, isUserChanged, useState } from "react";
+import { useEffect, isUserChanged, useState, useReducer } from "react";
 import { VscTrash } from "react-icons/vsc";
 import { FaRegEdit } from "react-icons/fa";
 import axios from "axios";
+import SweetAlert from "react-bootstrap-sweetalert";
+
 
 const countriesTable = () => {
   // Start User Data
@@ -19,6 +21,12 @@ const countriesTable = () => {
   const [updateId, setId] = useState("");
   const [isUserChanged, setIsUserChanged] = useState(false);
   // End User Data
+
+  // Start Alert 
+  const [deletedUserId, setDeletedUserId] = useState("");
+  const [displayUserDelete, setDisplayUserDelete] = useState(false);
+  // End Alert
+
 
   useEffect(async () => {
     const resUsers = await fetch("http://localhost:5000/users/show");
@@ -93,6 +101,7 @@ const countriesTable = () => {
       .then((data) => {
         if (data) {
           setIsUserChanged(!isUserChanged);
+          setDisplayUserDelete(false)
         }
       })
       .catch((error) => console.log(error));
@@ -239,10 +248,11 @@ const countriesTable = () => {
                               </Button>
                             </td>
                             <td>
-                              <Button
+                            <Button
                                 className={styles.btnEdit}
                                 onClick={() => {
-                                  deleteUser(user._id);
+                                  setDisplayUserDelete(true);
+                                  setDeletedUserId(user._id);
                                 }}
                               >
                                 <VscTrash className={styles.VscTrash} />
@@ -258,6 +268,19 @@ const countriesTable = () => {
           </Container>
         </main>
       </div>
+      <SweetAlert
+        warning
+        show={displayUserDelete}
+        showCancel
+        confirmBtnText="Yes, delete it!"
+        confirmBtnBsStyle="danger"
+        title="Are you sure?"
+        onConfirm={() => deleteUser(deletedUserId)}
+        onCancel={() => setDisplayUserDelete(false)}
+        focusCancelBtn
+      >
+        You will not be able to recover this user!
+      </SweetAlert>
     </Layout>
   );
 };
