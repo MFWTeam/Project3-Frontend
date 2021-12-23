@@ -14,12 +14,23 @@ import {
 import { VscTrash } from "react-icons/vsc";
 import { FaRegEdit } from "react-icons/fa";
 import { RiSlideshowLine } from "react-icons/ri";
+import { useRouter } from "next/router";
 import SweetAlert from "react-bootstrap-sweetalert";
 
 export default function store() {
+  const router = useRouter();
+  useEffect(async () => {
+    const token = await JSON.parse(localStorage.getItem("token"));
+    if (token === null) {
+      router.push("/signIn");
+    }
+  }, []);
   // Stores data
   const [stores, setStores] = useState([]);
   const [isStoreChanged, setIsStoreChanged] = useState(false);
+
+  // Message Display
+  const [msgError, setMsgError] = useState(false);
 
   // Default Store Name
   const [defaultStoreName, setDefaultStoreName] = useState("");
@@ -57,14 +68,13 @@ export default function store() {
 
   // Start User Data
   const [users, setUser] = useState([]);
-  const [isUserChanged, setIsUserChanged] = useState(false);
   // End User Data
 
   useEffect(async () => {
     const resUsers = await fetch("http://localhost:5000/users/show");
     const users = await resUsers.json();
     setUser(users);
-  }, [isUserChanged]);
+  }, []);
 
   useEffect(async () => {
     const resStores = await fetch("http://localhost:5000/stores/show");
@@ -77,6 +87,14 @@ export default function store() {
       .then((response) => response.json())
       .then((data) => setProducts(data))
       .catch((err) => console.log(err));
+  }
+
+  function validationInput() {
+    if (name === "" || managerName === "") {
+      setMsgError(true);
+    } else {
+      addStore();
+    }
   }
 
   function addStore() {
@@ -106,7 +124,7 @@ export default function store() {
             setIsStoreChanged(!isStoreChanged);
             setName("");
             setManagerName("default");
-            setId("");
+            //setId("");
           }
         })
         .catch((error) => console.log(error));
@@ -127,18 +145,21 @@ export default function store() {
   }
 
   useEffect(() => {
-    checkStoreUpdate(defaultStoreName);
-  }, [updateId])
+    if (updateId !== "") {
+      checkStoreUpdate(defaultStoreName);
+    }
+  }, [updateId]);
 
-  async function checkStoreUpdate(name) {
+  function checkStoreUpdate(name) {
     fetch("http://localhost:5000/products/show/byName/" + name)
       .then((response) => response.json())
       .then((data) => {
         if (data.length > 0) {
           setDisplayStoreUpdate(true);
+          setId("");
         } else {
           updateStore(updateId);
-          setDisplayStoreUpdate(false)
+          setDisplayStoreUpdate(false);
         }
       })
       .catch((err) => console.log(err));
@@ -167,7 +188,7 @@ export default function store() {
       .then((data) => {
         if (data) {
           setDisplayStoreDelete(false);
-          setIsStoreChanged(true);
+          setIsStoreChanged(!isStoreChanged);
         }
       })
       .catch((error) => console.log(error));
@@ -233,14 +254,14 @@ export default function store() {
     fetch("http://localhost:5000/products/show/byName/" + name)
       .then((response) => response.json())
       .then((data) => {
-        console.log(data)
+        console.log(data);
         if (data.length > 0) {
           setErrorDisplay(true);
-          setDisplayStoreDelete(false)
+          setDisplayStoreDelete(false);
         } else {
           deleteStore(deletedStoreId);
           setErrorDisplay(false);
-          setDisplayStoreDelete(false)
+          setDisplayStoreDelete(false);
         }
       })
       .catch((err) => console.log(err));
@@ -292,7 +313,8 @@ export default function store() {
                   variant="primary"
                   className={styles.btnAdd}
                   onClick={() => {
-                    addStore();
+                    validationInput();
+                    // addStore();
                   }}
                 >
                   Add Store
@@ -564,16 +586,21 @@ export default function store() {
         show={errorDisplay}
         title="You Can not delete this store !!!"
         onConfirm={() => setErrorDisplay(false)}
-      >
-      </SweetAlert>
+      ></SweetAlert>
+
       <SweetAlert
         danger
         show={displayStoreUpdate}
         title="You Can not update this store !!!"
         onConfirm={() => setDisplayStoreUpdate(false)}
-      >
-      </SweetAlert>
-    </Layout>
-  )
-};
+      ></SweetAlert>
 
+      <SweetAlert
+        warning
+        show={msgError}
+        title="Please Enter All Data"
+        onConfirm={() => setMsgError(false)}
+      ></SweetAlert>
+    </Layout>
+  );
+}

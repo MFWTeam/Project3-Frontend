@@ -4,31 +4,23 @@ import Link from "next/link";
 import Layout from "../components/Layout";
 import axios from "axios";
 import styles from "../styles/Home.module.css";
+import { useRouter } from "next/router";
 
 export default function Home() {
-  // Stores data
-  const [stores, setStores] = useState([]);
-  const [isStoreChanged, setIsStoreChanged] = useState(false);
-  // Start Model Store
-  const [show, setShow] = useState(false);
-  const handleClose = () => setShow(false);
-  const handleShow = () => setShow(true);
-  // End Model Store
+  const router = useRouter();
 
-  // Start Model User
-  const [showUser, setShowUser] = useState(false);
-  const handleCloseUser = () => setShowUser(false);
-  const handleShowUser = () => setShowUser(true);
-  // End Model User
+  useEffect(async () => {
+    const token = await JSON.parse(localStorage.getItem("token"));
+    if (token === null) {
+      router.push("/signIn");
+    }
+  }, []);
 
   // Start Model Role
   const [showRole, setShowRole] = useState(false);
   const handleCloseRole = () => setShowRole(false);
   const handleShowRole = () => setShowRole(true);
   // End Model Role
-
-  const [name, setName] = useState("");
-  const [managerName, setManagerName] = useState("");
 
   // Start Role Data
   const [addRole, setAddRole] = useState("");
@@ -55,53 +47,8 @@ export default function Home() {
     setRoles(roles);
   }, [isRoleChanged]);
 
-  useEffect(async () => {
-    const resStores = await fetch("http://localhost:5000/stores/show");
-    const stores = await resStores.json();
-    setStores(stores);
-  }, [isStoreChanged]);
-
-  function addStore() {
-    axios
-      .post("http://localhost:5000/stores/save", {
-        name: name,
-        managerName: managerName,
-      })
-      .then((data) => {
-        if (data) {
-          setIsStoreChanged(true);
-        }
-      })
-      .catch((error) => console.log(error));
-  }
-
   return (
     <Layout>
-      {/* <div className={styles.container}>
-        <main className={styles.main}>
-          <div className={styles.grid}>
-            <Link href="/store">
-              <Button variant="primary" className={styles.btn}>
-                Store
-              </Button>
-            </Link>
-
-            <Link href="/user">
-              <Button variant="primary" className={styles.btn}>
-                User
-              </Button>
-            </Link>
-
-            <Button
-              variant="primary"
-              className={styles.btn}
-              onClick={handleShowRole}
-            >
-              Role
-            </Button>
-          </div>
-        </main>
-      </div> */}
       <div className={styles.body}>
         <div className={styles.container}>
           <Link href="/store">
