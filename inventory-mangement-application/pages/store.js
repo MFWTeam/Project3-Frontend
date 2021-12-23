@@ -10,6 +10,8 @@ import {
   Container,
   Row,
   Col,
+  Tabs,
+  Tab,
 } from "react-bootstrap";
 import { VscTrash } from "react-icons/vsc";
 import { FaRegEdit } from "react-icons/fa";
@@ -32,8 +34,12 @@ export default function store() {
   // Message Display
   const [msgError, setMsgError] = useState(false);
 
+  // showExportAndSupply
+  const [showExportAndSupply, setShowExportAndSupply] = useState(false);
+
   // Default Store Name
   const [defaultStoreName, setDefaultStoreName] = useState("");
+  const [exportProductName, setExportProductName] = useState("");
   // End Store Name
 
   // Start Model Store
@@ -52,6 +58,12 @@ export default function store() {
   const [productQuantity, setProductQuantity] = useState(0);
   // End Product Data
 
+  // Start New Product
+  const [newProducts, setNewProducts] = useState([]);
+  const [quantity, setQuantity] = useState(0);
+  const [updateProductId, setUpdateProductId] = useState("");
+  // End New Product
+
   // Start Store Data
   const [name, setName] = useState("");
   const [managerName, setManagerName] = useState("");
@@ -63,7 +75,6 @@ export default function store() {
   const [displayStoreDelete, setDisplayStoreDelete] = useState(false);
   const [displayStoreUpdate, setDisplayStoreUpdate] = useState(false);
   const [errorDisplay, setErrorDisplay] = useState(false);
-
   // End Alert
 
   // Start User Data
@@ -89,11 +100,32 @@ export default function store() {
       .catch((err) => console.log(err));
   }
 
+  function getNewProducts() {
+    fetch("http://localhost:5000/products/show/byName/New")
+      .then((response) => response.json())
+      .then((data) => setNewProducts(data))
+      .catch((err) => console.log(err));
+  }
+
   function validationInput() {
     if (name === "" || managerName === "") {
       setMsgError(true);
     } else {
       addStore();
+    }
+  }
+
+  function getProductQuantity(name) {
+    if (name !== "default") {
+      fetch("http://localhost:5000/products/show/byName/New")
+        .then((response) => response.json())
+        .then((data) => {
+          const found = data.find((elem) => elem.name === name);
+          setQuantity(found.quantity);
+        })
+        .catch((err) => console.log(err));
+    } else {
+      setQuantity(0);
     }
   }
 
@@ -147,6 +179,7 @@ export default function store() {
   useEffect(() => {
     if (updateId !== "") {
       checkStoreUpdate(defaultStoreName);
+      //defaultStoreName
     }
   }, [updateId]);
 
@@ -173,7 +206,7 @@ export default function store() {
         setProductBarcode(data[0].barcode);
         setProductPrice(data[0].price);
         setProductQuantity(data[0].quantity);
-        setId(data[0]._id);
+        setUpdateProductId(data[0]._id);
       })
       .catch((error) => {
         console.log(error);
@@ -195,9 +228,9 @@ export default function store() {
   }
 
   function addProduct() {
-    if (updateId) {
+    if (updateProductId) {
       axios
-        .put("http://localhost:5000/products/update/" + updateId, {
+        .put("http://localhost:5000/products/update/" + updateProductId, {
           name: productName,
           barcode: productBarcode,
           price: productPrice,
@@ -210,6 +243,7 @@ export default function store() {
             setProductBarcode("");
             setProductPrice("");
             setProductQuantity("");
+            setUpdateProductId("");
             getProducts(defaultStoreName);
           }
         })
@@ -229,6 +263,7 @@ export default function store() {
             setProductBarcode("");
             setProductPrice(0);
             setProductQuantity(0);
+            setUpdateProductId("");
             getProducts(defaultStoreName);
           }
         })
@@ -272,6 +307,34 @@ export default function store() {
       <div className={styles.container}>
         <main className={styles.main}>
           <Container>
+            <Row>
+              <Col></Col>
+              <Col></Col>
+              <Col>
+                <Button
+                  variant="primary"
+                  className={styles.btnExport}
+                  // onClick={() => {
+                  //   getNewProducts();
+                  //   setShowExportAndSupply(true);
+                  // }}
+                >
+                  User Tracking
+                </Button>
+              </Col>
+              <Col>
+                <Button
+                  variant="primary"
+                  className={styles.btnExport}
+                  onClick={() => {
+                    getNewProducts();
+                    setShowExportAndSupply(true);
+                  }}
+                >
+                  Export and supply products
+                </Button>
+              </Col>
+            </Row>
             <Row>
               <Col>
                 <Form.Group className="mb-3">
@@ -601,6 +664,601 @@ export default function store() {
         title="Please Enter All Data"
         onConfirm={() => setMsgError(false)}
       ></SweetAlert>
+
+      <Modal
+        size="lg"
+        show={showExportAndSupply}
+        onHide={() => setShowExportAndSupply(false)}
+        aria-labelledby="example-modal-sizes-title-lg"
+      >
+        <Modal.Header closeButton>
+          <Modal.Title id="example-modal-sizes-title-lg">
+            Export and supply products
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Tabs
+            defaultActiveKey="sale"
+            id="uncontrolled-tab-example"
+            className="mb-3"
+          >
+            <Tab eventKey="sale" title="Sale">
+              <Container>
+                <Row>
+                  <Col>
+                    <Form.Group className="mb-3">
+                      <Form.Label>
+                        Customer Name<span>*</span>
+                      </Form.Label>
+                      <Form.Control
+                        type="text"
+                        placeholder="Enter store name"
+                        autoComplete="off"
+                        // onChange={(e) => setProductName(e.target.value)}
+                      />
+                    </Form.Group>
+                  </Col>
+                  <Col>
+                    <Form.Group className="mb-3">
+                      <Form.Label>
+                        Product Name<span>*</span>
+                      </Form.Label>
+                      <Form.Select
+                        value={exportProductName}
+                        onChange={(e) => {
+                          setExportProductName(e.target.value);
+                          getProductQuantity(e.target.value);
+                        }}
+                      >
+                        <option value="default">Choose a Product</option>
+                        {newProducts &&
+                          newProducts.map((newProduct, i) => {
+                            return (
+                              <option key={i} value={newProduct.name}>
+                                {newProduct.name}
+                              </option>
+                            );
+                          })}
+                      </Form.Select>
+                    </Form.Group>
+                  </Col>
+                  <Col>
+                    <Form.Group className="mb-3">
+                      <Form.Label>Quantity</Form.Label>
+                      <Form.Control
+                        type="text"
+                        value={quantity}
+                        placeholder="Enter store quantity"
+                        disabled
+                        autoComplete="off"
+                      />
+                    </Form.Group>
+                  </Col>
+                </Row>
+                <Row>
+                  <Col>
+                    <Form.Group className="mb-3">
+                      <Form.Label>
+                        Sale Quantity<span>*</span>
+                      </Form.Label>
+                      <Form.Control
+                        type="text"
+                        placeholder="Enter store name"
+                        autoComplete="off"
+                        // value=""
+                        // onChange={(e) => setProductName(e.target.value)}
+                      />
+                    </Form.Group>
+                  </Col>
+
+                  <Col>
+                    <Button
+                      className={styles.btnSave}
+                      onClick={() => {
+                        addProduct();
+                      }}
+                    >
+                      Save
+                    </Button>
+                  </Col>
+                </Row>
+                <hr></hr>
+                <Row>
+                  <Col>
+                    <Table striped bordered hover className={styles.table}>
+                      <thead>
+                        <tr>
+                          <th>Product Name</th>
+                          <th>Barcode</th>
+                          <th>Price</th>
+                          <th>Quantity</th>
+                          <th>Edit</th>
+                          <th>Delete</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {products &&
+                          products.map((product) => {
+                            return (
+                              <tr>
+                                <td>{product.name}</td>
+                                <td>{product.barcode}</td>
+                                <td>{product.price}</td>
+                                <td>{product.quantity}</td>
+                                <td>
+                                  <Button
+                                    className={styles.btnEdit}
+                                    onClick={() => {
+                                      updateStore(store._id);
+                                    }}
+                                  >
+                                    <FaRegEdit
+                                      className={styles.FaRegEdit}
+                                      onClick={() => updateProduct(product._id)}
+                                    />
+                                  </Button>
+                                </td>
+                                <td>
+                                  <Button
+                                    className={styles.btnEdit}
+                                    onClick={() => {
+                                      setDeletedId(product._id);
+                                      setDisplay(true);
+                                    }}
+                                  >
+                                    <VscTrash className={styles.VscTrash} />
+                                  </Button>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                      </tbody>
+                    </Table>
+                  </Col>
+                </Row>
+              </Container>
+            </Tab>
+            <Tab eventKey="supply" title="Supply">
+              <Container>
+                <Row>
+                  <Col>
+                    <Form.Group className="mb-3">
+                      <Form.Label>
+                        Name<span>*</span>
+                      </Form.Label>
+                      <Form.Control
+                        type="text"
+                        placeholder="Enter store name"
+                        autoComplete="off"
+                        value={productName}
+                        onChange={(e) => setProductName(e.target.value)}
+                      />
+                    </Form.Group>
+                  </Col>
+                  <Col>
+                    <Form.Group className="mb-3">
+                      <Form.Label>
+                        Barcode<span>*</span>
+                      </Form.Label>
+                      <Form.Control
+                        type="text"
+                        placeholder="Enter product barcode"
+                        autoComplete="off"
+                        value={productBarcode}
+                        onChange={(e) => setProductBarcode(e.target.value)}
+                      />
+                    </Form.Group>
+                  </Col>
+                  <Col>
+                    <Form.Group className="mb-3">
+                      <Form.Label>
+                        Price<span>*</span>
+                      </Form.Label>
+                      <Form.Control
+                        type="text"
+                        placeholder="Enter product price"
+                        autoComplete="off"
+                        value={productPrice}
+                        onChange={(e) => setProductPrice(e.target.value)}
+                      />
+                    </Form.Group>
+                  </Col>
+                </Row>
+                <Row>
+                  <Col>
+                    <Form.Group className="mb-3">
+                      <Form.Label>
+                        Quantity<span>*</span>
+                      </Form.Label>
+                      <Form.Control
+                        type="text"
+                        placeholder="Enter store quantity"
+                        autoComplete="off"
+                        value={productQuantity}
+                        onChange={(e) => setProductQuantity(e.target.value)}
+                      />
+                    </Form.Group>
+                  </Col>
+                  <Col>
+                    <Form.Group className="mb-3">
+                      <Form.Label>
+                        Store Name<span>*</span>
+                      </Form.Label>
+                      <Form.Control
+                        type="text"
+                        value={defaultStoreName}
+                        placeholder="Enter store quantity"
+                        disabled
+                        autoComplete="off"
+                      />
+                    </Form.Group>
+                  </Col>
+                  <Col>
+                    <Button
+                      className={styles.btnSave}
+                      onClick={() => {
+                        addProduct();
+                      }}
+                    >
+                      Save
+                    </Button>
+                  </Col>
+                </Row>
+                <hr></hr>
+                <Row>
+                  <Col>
+                    <Table striped bordered hover className={styles.table}>
+                      <thead>
+                        <tr>
+                          <th>Product Name</th>
+                          <th>Barcode</th>
+                          <th>Price</th>
+                          <th>Quantity</th>
+                          <th>Edit</th>
+                          <th>Delete</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {products &&
+                          products.map((product) => {
+                            return (
+                              <tr>
+                                <td>{product.name}</td>
+                                <td>{product.barcode}</td>
+                                <td>{product.price}</td>
+                                <td>{product.quantity}</td>
+                                <td>
+                                  <Button
+                                    className={styles.btnEdit}
+                                    onClick={() => {
+                                      updateStore(store._id);
+                                    }}
+                                  >
+                                    <FaRegEdit
+                                      className={styles.FaRegEdit}
+                                      onClick={() => updateProduct(product._id)}
+                                    />
+                                  </Button>
+                                </td>
+                                <td>
+                                  <Button
+                                    className={styles.btnEdit}
+                                    onClick={() => {
+                                      setDeletedId(product._id);
+                                      setDisplay(true);
+                                    }}
+                                  >
+                                    <VscTrash className={styles.VscTrash} />
+                                  </Button>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                      </tbody>
+                    </Table>
+                  </Col>
+                </Row>
+              </Container>
+            </Tab>
+            <Tab eventKey="returned" title="Returned">
+              <Tabs
+                defaultActiveKey="home"
+                id="uncontrolled-tab-example"
+                className="mb-3"
+              >
+                <Tab eventKey="used" title="Used">
+                  <Container>
+                    <Row>
+                      <Col>
+                        <Form.Group className="mb-3">
+                          <Form.Label>
+                            Name<span>*</span>
+                          </Form.Label>
+                          <Form.Control
+                            type="text"
+                            placeholder="Enter store name"
+                            autoComplete="off"
+                            value={productName}
+                            onChange={(e) => setProductName(e.target.value)}
+                          />
+                        </Form.Group>
+                      </Col>
+                      <Col>
+                        <Form.Group className="mb-3">
+                          <Form.Label>
+                            Barcode<span>*</span>
+                          </Form.Label>
+                          <Form.Control
+                            type="text"
+                            placeholder="Enter product barcode"
+                            autoComplete="off"
+                            value={productBarcode}
+                            onChange={(e) => setProductBarcode(e.target.value)}
+                          />
+                        </Form.Group>
+                      </Col>
+                      <Col>
+                        <Form.Group className="mb-3">
+                          <Form.Label>
+                            Price<span>*</span>
+                          </Form.Label>
+                          <Form.Control
+                            type="text"
+                            placeholder="Enter product price"
+                            autoComplete="off"
+                            value={productPrice}
+                            onChange={(e) => setProductPrice(e.target.value)}
+                          />
+                        </Form.Group>
+                      </Col>
+                    </Row>
+                    <Row>
+                      <Col>
+                        <Form.Group className="mb-3">
+                          <Form.Label>
+                            Quantity<span>*</span>
+                          </Form.Label>
+                          <Form.Control
+                            type="text"
+                            placeholder="Enter store quantity"
+                            autoComplete="off"
+                            value={productQuantity}
+                            onChange={(e) => setProductQuantity(e.target.value)}
+                          />
+                        </Form.Group>
+                      </Col>
+                      <Col>
+                        <Form.Group className="mb-3">
+                          <Form.Label>
+                            Store Name<span>*</span>
+                          </Form.Label>
+                          <Form.Control
+                            type="text"
+                            value={defaultStoreName}
+                            placeholder="Enter store quantity"
+                            disabled
+                            autoComplete="off"
+                          />
+                        </Form.Group>
+                      </Col>
+                      <Col>
+                        <Button
+                          className={styles.btnSave}
+                          onClick={() => {
+                            addProduct();
+                          }}
+                        >
+                          Save
+                        </Button>
+                      </Col>
+                    </Row>
+                    <hr></hr>
+                    <Row>
+                      <Col>
+                        <Table striped bordered hover className={styles.table}>
+                          <thead>
+                            <tr>
+                              <th>Product Name</th>
+                              <th>Barcode</th>
+                              <th>Price</th>
+                              <th>Quantity</th>
+                              <th>Edit</th>
+                              <th>Delete</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {products &&
+                              products.map((product) => {
+                                return (
+                                  <tr>
+                                    <td>{product.name}</td>
+                                    <td>{product.barcode}</td>
+                                    <td>{product.price}</td>
+                                    <td>{product.quantity}</td>
+                                    <td>
+                                      <Button
+                                        className={styles.btnEdit}
+                                        onClick={() => {
+                                          updateStore(store._id);
+                                        }}
+                                      >
+                                        <FaRegEdit
+                                          className={styles.FaRegEdit}
+                                          onClick={() =>
+                                            updateProduct(product._id)
+                                          }
+                                        />
+                                      </Button>
+                                    </td>
+                                    <td>
+                                      <Button
+                                        className={styles.btnEdit}
+                                        onClick={() => {
+                                          setDeletedId(product._id);
+                                          setDisplay(true);
+                                        }}
+                                      >
+                                        <VscTrash className={styles.VscTrash} />
+                                      </Button>
+                                    </td>
+                                  </tr>
+                                );
+                              })}
+                          </tbody>
+                        </Table>
+                      </Col>
+                    </Row>
+                  </Container>
+                </Tab>
+                <Tab eventKey="damaged" title="Damaged">
+                  <Container>
+                    <Row>
+                      <Col>
+                        <Form.Group className="mb-3">
+                          <Form.Label>
+                            Name<span>*</span>
+                          </Form.Label>
+                          <Form.Control
+                            type="text"
+                            placeholder="Enter store name"
+                            autoComplete="off"
+                            value={productName}
+                            onChange={(e) => setProductName(e.target.value)}
+                          />
+                        </Form.Group>
+                      </Col>
+                      <Col>
+                        <Form.Group className="mb-3">
+                          <Form.Label>
+                            Barcode<span>*</span>
+                          </Form.Label>
+                          <Form.Control
+                            type="text"
+                            placeholder="Enter product barcode"
+                            autoComplete="off"
+                            value={productBarcode}
+                            onChange={(e) => setProductBarcode(e.target.value)}
+                          />
+                        </Form.Group>
+                      </Col>
+                      <Col>
+                        <Form.Group className="mb-3">
+                          <Form.Label>
+                            Price<span>*</span>
+                          </Form.Label>
+                          <Form.Control
+                            type="text"
+                            placeholder="Enter product price"
+                            autoComplete="off"
+                            value={productPrice}
+                            onChange={(e) => setProductPrice(e.target.value)}
+                          />
+                        </Form.Group>
+                      </Col>
+                    </Row>
+                    <Row>
+                      <Col>
+                        <Form.Group className="mb-3">
+                          <Form.Label>
+                            Quantity<span>*</span>
+                          </Form.Label>
+                          <Form.Control
+                            type="text"
+                            placeholder="Enter store quantity"
+                            autoComplete="off"
+                            value={productQuantity}
+                            onChange={(e) => setProductQuantity(e.target.value)}
+                          />
+                        </Form.Group>
+                      </Col>
+                      <Col>
+                        <Form.Group className="mb-3">
+                          <Form.Label>
+                            Store Name<span>*</span>
+                          </Form.Label>
+                          <Form.Control
+                            type="text"
+                            value={defaultStoreName}
+                            placeholder="Enter store quantity"
+                            disabled
+                            autoComplete="off"
+                          />
+                        </Form.Group>
+                      </Col>
+                      <Col>
+                        <Button
+                          className={styles.btnSave}
+                          onClick={() => {
+                            addProduct();
+                          }}
+                        >
+                          Save
+                        </Button>
+                      </Col>
+                    </Row>
+                    <hr></hr>
+                    <Row>
+                      <Col>
+                        <Table striped bordered hover className={styles.table}>
+                          <thead>
+                            <tr>
+                              <th>Product Name</th>
+                              <th>Barcode</th>
+                              <th>Price</th>
+                              <th>Quantity</th>
+                              <th>Edit</th>
+                              <th>Delete</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {products &&
+                              products.map((product) => {
+                                return (
+                                  <tr>
+                                    <td>{product.name}</td>
+                                    <td>{product.barcode}</td>
+                                    <td>{product.price}</td>
+                                    <td>{product.quantity}</td>
+                                    <td>
+                                      <Button
+                                        className={styles.btnEdit}
+                                        onClick={() => {
+                                          updateStore(store._id);
+                                        }}
+                                      >
+                                        <FaRegEdit
+                                          className={styles.FaRegEdit}
+                                          onClick={() =>
+                                            updateProduct(product._id)
+                                          }
+                                        />
+                                      </Button>
+                                    </td>
+                                    <td>
+                                      <Button
+                                        className={styles.btnEdit}
+                                        onClick={() => {
+                                          setDeletedId(product._id);
+                                          setDisplay(true);
+                                        }}
+                                      >
+                                        <VscTrash className={styles.VscTrash} />
+                                      </Button>
+                                    </td>
+                                  </tr>
+                                );
+                              })}
+                          </tbody>
+                        </Table>
+                      </Col>
+                    </Row>
+                  </Container>
+                </Tab>
+              </Tabs>
+            </Tab>
+          </Tabs>
+        </Modal.Body>
+      </Modal>
     </Layout>
   );
 }
