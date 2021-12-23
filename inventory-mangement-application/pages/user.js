@@ -30,6 +30,9 @@ const users = () => {
   const [isUserChanged, setIsUserChanged] = useState(false);
   // End User Data
 
+  // Message Display
+  const [msgError, setMsgError] = useState(false);
+
   // Start Alert
   const [deletedUserId, setDeletedUserId] = useState("");
   const [displayUserDelete, setDisplayUserDelete] = useState(false);
@@ -40,6 +43,14 @@ const users = () => {
     const users = await resUsers.json();
     setUser(users);
   }, [isUserChanged]);
+
+  function validationInput() {
+    if (userName === "" || password === "" || email === "") {
+      setMsgError(true);
+    } else {
+      saveUser();
+    }
+  }
 
   function saveUser() {
     if (updateId) {
@@ -196,7 +207,8 @@ const users = () => {
                       variant="primary"
                       className={styles.btnAdd}
                       onClick={() => {
-                        saveUser();
+                        validationInput();
+                        // saveUser();
                       }}
                     >
                       Add User
@@ -288,6 +300,12 @@ const users = () => {
       >
         You will not be able to recover this user!
       </SweetAlert>
+      <SweetAlert
+        warning
+        show={msgError}
+        title="Please Enter All Data"
+        onConfirm={() => setMsgError(false)}
+      ></SweetAlert>
     </Layout>
   );
 };
