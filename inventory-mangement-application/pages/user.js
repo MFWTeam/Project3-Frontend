@@ -1,14 +1,22 @@
 import Layout from "../components/Layout";
 import { Table, Container, Row, Col, Button, Form } from "react-bootstrap";
 import styles from "../styles/user.module.css";
-import { useEffect, isUserChanged, useState, useReducer } from "react";
+import { useEffect, useState } from "react";
 import { VscTrash } from "react-icons/vsc";
 import { FaRegEdit } from "react-icons/fa";
 import axios from "axios";
 import SweetAlert from "react-bootstrap-sweetalert";
+import { useRouter } from "next/router";
 
+const users = () => {
+  const router = useRouter();
+  useEffect(async () => {
+    const token = await JSON.parse(localStorage.getItem("token"));
+    if (token === null) {
+      router.push("/signIn");
+    }
+  }, []);
 
-const countriesTable = () => {
   // Start User Data
   const [users, setUser] = useState([]);
   const [userName, setUserName] = useState("");
@@ -22,11 +30,10 @@ const countriesTable = () => {
   const [isUserChanged, setIsUserChanged] = useState(false);
   // End User Data
 
-  // Start Alert 
+  // Start Alert
   const [deletedUserId, setDeletedUserId] = useState("");
   const [displayUserDelete, setDisplayUserDelete] = useState(false);
   // End Alert
-
 
   useEffect(async () => {
     const resUsers = await fetch("http://localhost:5000/users/show");
@@ -101,7 +108,7 @@ const countriesTable = () => {
       .then((data) => {
         if (data) {
           setIsUserChanged(!isUserChanged);
-          setDisplayUserDelete(false)
+          setDisplayUserDelete(false);
         }
       })
       .catch((error) => console.log(error));
@@ -248,7 +255,7 @@ const countriesTable = () => {
                               </Button>
                             </td>
                             <td>
-                            <Button
+                              <Button
                                 className={styles.btnEdit}
                                 onClick={() => {
                                   setDisplayUserDelete(true);
@@ -285,4 +292,4 @@ const countriesTable = () => {
   );
 };
 
-export default countriesTable;
+export default users;
