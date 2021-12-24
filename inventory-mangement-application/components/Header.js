@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { Navbar, Container, Nav, Button } from "react-bootstrap";
+import { Navbar, Container, Nav, Button, Row, Col } from "react-bootstrap";
+import Image from "next/image";
 import styles from "../styles/Header.module.css";
 
 export default function Header() {
@@ -46,7 +47,13 @@ export default function Header() {
                 localStorage.removeItem("token");
               }}
             >
-              Sign Out
+              <Row>
+                    <Col xs={8}>Sign Out</Col>
+                    <Col xs={4}>
+                      <Image src="/img/logout.png" width="30px" height="30px" />
+                    </Col>
+                  </Row>
+              
             </Button>
           </Navbar.Collapse>
         </Container>

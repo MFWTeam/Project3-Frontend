@@ -1,9 +1,18 @@
 import Layout from "../components/Layout";
-import { Table, Container, Row, Col, Button, Form } from "react-bootstrap";
+import {
+  Table,
+  Container,
+  Row,
+  Col,
+  Button,
+  Form,
+  Modal,
+} from "react-bootstrap";
 import styles from "../styles/user.module.css";
 import { useEffect, useState } from "react";
 import { VscTrash } from "react-icons/vsc";
 import { FaRegEdit } from "react-icons/fa";
+import Image from "next/image";
 import axios from "axios";
 import SweetAlert from "react-bootstrap-sweetalert";
 import { useRouter } from "next/router";
@@ -30,19 +39,45 @@ const users = () => {
   const [isUserChanged, setIsUserChanged] = useState(false);
   // End User Data
 
+  // Data UserTracking
+  const [actions, setActions] = useState([]);
+  const [isActionChanged, setIsActionChanged] = useState(false);
+  // Data UserTracking
+
   // Message Display
   const [msgError, setMsgError] = useState(false);
+  // Message Display
 
   // Start Alert
   const [deletedUserId, setDeletedUserId] = useState("");
   const [displayUserDelete, setDisplayUserDelete] = useState(false);
   // End Alert
 
+  // Start Model Store
+  const [show, setShow] = useState(false);
+  // End Model Store
+
+  // Roles Data
+  const [roles, setRoles] = useState([]);
+  // Roles Data
+
+  useEffect(async () => {
+    const resRole = await fetch("http://localhost:5000/roles/show");
+    const roles = await resRole.json();
+    setRoles(roles);
+  }, []);
+
   useEffect(async () => {
     const resUsers = await fetch("http://localhost:5000/users/show");
     const users = await resUsers.json();
     setUser(users);
   }, [isUserChanged]);
+
+  useEffect(async () => {
+    const usersActions = await fetch("http://localhost:5000/tracking/show");
+    const action = await usersActions.json();
+    setActions(action);
+  }, [isActionChanged]);
 
   function validationInput() {
     if (userName === "" || password === "" || email === "") {
@@ -61,16 +96,29 @@ const users = () => {
           password: password,
           phone: phone,
           address: address,
-          role: "Normal",
+          role: role,
         })
         .then((data) => {
           if (data) {
             setIsUserChanged(!isUserChanged);
+          }
+        })
+        .catch((error) => console.log(error));
+
+      axios
+        .post("http://localhost:5000/tracking/save", {
+          username: "Mohammed",
+          action: `Update Data of (${userName})`,
+        })
+        .then((data) => {
+          if (data) {
+            setIsActionChanged(!isActionChanged);
             setUserName("");
             setEmail("");
             setPassword("");
             setPhone("");
             setAddress("");
+            setRole("default");
             setId("");
           }
         })
@@ -83,11 +131,30 @@ const users = () => {
           password: password,
           phone: phone,
           address: address,
-          role: "Normal",
+          role: role,
         })
         .then((data) => {
           if (data) {
             setIsUserChanged(!isUserChanged);
+          }
+        })
+        .catch((error) => console.log(error));
+
+      axios
+        .post("http://localhost:5000/tracking/save", {
+          username: "Mohammed",
+          action: `Add New User with Name (${userName})`,
+        })
+        .then((data) => {
+          if (data) {
+            setIsActionChanged(!isActionChanged);
+            setUserName("");
+            setEmail("");
+            setPassword("");
+            setPhone("");
+            setAddress("");
+            setRole("default");
+            setId("");
           }
         })
         .catch((error) => console.log(error));
@@ -104,11 +171,20 @@ const users = () => {
         setPassword(data[0].password);
         setPhone(data[0].phone);
         setAddress(data[0].address);
+        setRole(data[0].role);
         setId(data[0]._id);
       })
       .catch((error) => {
         console.log(error);
       });
+  }
+
+  const [deletedUsername, setDeletedUsername] = useState("");
+
+  async function getDeletedUserName(id) {
+    const deletedData = await fetch("http://localhost:5000/users/show/" + id);
+    const found = await deletedData.json();
+    setDeletedUsername(found[0].name);
   }
 
   function deleteUser(id) {
@@ -123,6 +199,18 @@ const users = () => {
         }
       })
       .catch((error) => console.log(error));
+
+    axios
+      .post("http://localhost:5000/tracking/save", {
+        username: "Mohammed",
+        action: `Delete User with Name (${deletedUsername})`,
+      })
+      .then((data) => {
+        if (data) {
+          setIsActionChanged(!isActionChanged);
+        }
+      })
+      .catch((error) => console.log(error));
   }
 
   return (
@@ -130,6 +218,31 @@ const users = () => {
       <div className={styles.container}>
         <main className={styles.main}>
           <Container>
+            <Row>
+              <Col></Col>
+              <Col></Col>
+              <Col></Col>
+              <Col>
+                <Button
+                  variant="primary"
+                  className={styles.btnTracking}
+                  onClick={() => {
+                    setShow(true);
+                  }}
+                >
+                  <Row>
+                    <Col xs={8}>User Actions</Col>
+                    <Col xs={4}>
+                      <Image
+                        src="/img/eye-tracking.png"
+                        width="50px"
+                        height="50px"
+                      />
+                    </Col>
+                  </Row>
+                </Button>
+              </Col>
+            </Row>
             <Row>
               <Col>
                 <Form.Group className="mb-3">
@@ -173,9 +286,6 @@ const users = () => {
                   />
                 </Form.Group>
               </Col>
-            </Row>
-
-            <Row>
               <Col>
                 <Form.Group className="mb-3">
                   <Form.Label>Address</Form.Label>
@@ -188,6 +298,9 @@ const users = () => {
                   />
                 </Form.Group>
               </Col>
+            </Row>
+
+            <Row>
               <Col>
                 <Form.Group className="mb-3">
                   <Form.Label>Phone</Form.Label>
@@ -199,38 +312,63 @@ const users = () => {
                   />
                 </Form.Group>
               </Col>
-
               <Col>
-                <Row>
-                  <Col>
-                    <Button
-                      variant="primary"
-                      className={styles.btnAdd}
-                      onClick={() => {
-                        validationInput();
-                        // saveUser();
-                      }}
-                    >
-                      Add User
-                    </Button>
-                  </Col>
-                  <Col>
-                    <Button
-                      variant="primary"
-                      className={styles.btnAdd}
-                      onClick={() => {
-                        setUserName("");
-                        setEmail("");
-                        setPassword("");
-                        setPhone("");
-                        setAddress("");
-                        setId("");
-                      }}
-                    >
-                      Clear Data
-                    </Button>
-                  </Col>
-                </Row>
+                <Form.Group className="mb-3">
+                  <Form.Label>Role</Form.Label>
+                  <Form.Select
+                    value={role}
+                    onChange={(e) => setRole(e.target.value)}
+                  >
+                    <option value="default">Choose a Role</option>
+                    {roles &&
+                      roles.map((role, i) => {
+                        return (
+                          <option key={i} value={role.name}>
+                            {role.name}
+                          </option>
+                        );
+                      })}
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+              <Col>
+                <Button
+                  variant="primary"
+                  className={styles.btnAdd}
+                  onClick={() => {
+                    validationInput();
+                    // saveUser();
+                  }}
+                >
+                  <Row>
+                    <Col xs={8}>Add User</Col>
+                    <Col xs={4}>
+                      <Image src="/img/plus.png" width="30px" height="30px" />
+                    </Col>
+                  </Row>
+                </Button>
+              </Col>
+              <Col>
+                <Button
+                  variant="primary"
+                  className={styles.btnAdd}
+                  onClick={() => {
+                    setUserName("");
+                    setEmail("");
+                    setPassword("");
+                    setPhone("");
+                    setAddress("");
+                    setRole("default");
+                    setId("");
+                  }}
+                >
+                  <Row>
+                    <Col xs={8}>Clear Data</Col>
+                    <Col xs={4}>
+                      <Image src="/img/clear.png" width="30px" height="30px" />
+                    </Col>
+                  </Row>
+                </Button>
               </Col>
             </Row>
             <hr />
@@ -270,6 +408,7 @@ const users = () => {
                               <Button
                                 className={styles.btnEdit}
                                 onClick={() => {
+                                  getDeletedUserName(user._id);
                                   setDisplayUserDelete(true);
                                   setDeletedUserId(user._id);
                                 }}
@@ -287,6 +426,43 @@ const users = () => {
           </Container>
         </main>
       </div>
+
+      <Modal
+        size="lg"
+        show={show}
+        onHide={() => setShow(false)}
+        aria-labelledby="example-modal-sizes-title-lg"
+      >
+        <Modal.Header closeButton>
+          <Modal.Title id="example-modal-sizes-title-lg">
+            Users Actions
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <Table striped bordered hover className={styles.table}>
+            <thead>
+              <tr>
+                <th>User Name</th>
+                <th>Action</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              {actions &&
+                actions.map((action) => {
+                  return (
+                    <tr>
+                      <td>{action.username}</td>
+                      <td>{action.action}</td>
+                      <td>{action.date}</td>
+                    </tr>
+                  );
+                })}
+            </tbody>
+          </Table>
+        </Modal.Body>
+      </Modal>
+
       <SweetAlert
         warning
         show={displayUserDelete}
@@ -300,6 +476,7 @@ const users = () => {
       >
         You will not be able to recover this user!
       </SweetAlert>
+
       <SweetAlert
         warning
         show={msgError}
