@@ -314,10 +314,10 @@ export default function store() {
                 <Button
                   variant="primary"
                   className={styles.btnExport}
-                  // onClick={() => {
-                  //   getNewProducts();
-                  //   setShowExportAndSupply(true);
-                  // }}
+                // onClick={() => {
+                //   getNewProducts();
+                //   setShowExportAndSupply(true);
+                // }}
                 >
                   User Tracking
                 </Button>
@@ -331,7 +331,7 @@ export default function store() {
                     setShowExportAndSupply(true);
                   }}
                 >
-                  Export and supply products
+                  Sale and supply products
                 </Button>
               </Col>
             </Row>
@@ -673,7 +673,7 @@ export default function store() {
       >
         <Modal.Header closeButton>
           <Modal.Title id="example-modal-sizes-title-lg">
-            Export and supply products
+            Sale and supply products
           </Modal.Title>
         </Modal.Header>
         <Modal.Body>
@@ -692,9 +692,9 @@ export default function store() {
                       </Form.Label>
                       <Form.Control
                         type="text"
-                        placeholder="Enter store name"
+                        placeholder="Enter customer name"
                         autoComplete="off"
-                        // onChange={(e) => setProductName(e.target.value)}
+                      // onChange={(e) => setProductName(e.target.value)}
                       />
                     </Form.Group>
                   </Col>
@@ -728,7 +728,7 @@ export default function store() {
                       <Form.Control
                         type="text"
                         value={quantity}
-                        placeholder="Enter store quantity"
+                        placeholder="Enter product quantity"
                         disabled
                         autoComplete="off"
                       />
@@ -743,14 +743,13 @@ export default function store() {
                       </Form.Label>
                       <Form.Control
                         type="text"
-                        placeholder="Enter store name"
+                        placeholder="Enter sale quantity"
                         autoComplete="off"
-                        // value=""
-                        // onChange={(e) => setProductName(e.target.value)}
+                      // value=""
+                      // onChange={(e) => setProductName(e.target.value)}
                       />
                     </Form.Group>
                   </Col>
-
                   <Col>
                     <Button
                       className={styles.btnSave}
@@ -768,10 +767,10 @@ export default function store() {
                     <Table striped bordered hover className={styles.table}>
                       <thead>
                         <tr>
+                          <th>Customer Name</th>
                           <th>Product Name</th>
-                          <th>Barcode</th>
-                          <th>Price</th>
                           <th>Quantity</th>
+                          <th>Sale Quantity</th>
                           <th>Edit</th>
                           <th>Delete</th>
                         </tr>
