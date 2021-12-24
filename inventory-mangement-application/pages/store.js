@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import Layout from "../components/Layout";
 import styles from "../styles/store.module.css";
+import Image from "next/image";
 import axios from "axios";
 import {
   Button,
@@ -49,6 +50,7 @@ export default function store() {
   // Deleted Id
   const [deletedId, setDeletedId] = useState("");
   const [deletedStoreId, setDeletedStoreId] = useState("");
+  const [deletedProductName, setDeletedProductName] = useState("");
 
   // Start Product Data
   const [products, setProducts] = useState([]);
@@ -115,6 +117,19 @@ export default function store() {
     }
   }
 
+  function validationInputProduct() {
+    if (
+      productName === "" ||
+      productBarcode === "" ||
+      productPrice === "" ||
+      productQuantity === ""
+    ) {
+      setMsgError(true);
+    } else {
+      addProduct();
+    }
+  }
+
   function getProductQuantity(name) {
     if (name !== "default") {
       fetch("http://localhost:5000/products/show/byName/New")
@@ -139,6 +154,17 @@ export default function store() {
         .then((data) => {
           if (data) {
             setIsStoreChanged(!isStoreChanged);
+          }
+        })
+        .catch((error) => console.log(error));
+
+      axios
+        .post("http://localhost:5000/tracking/save", {
+          username: "Mohammed",
+          action: `Update Data of Store (${name})`,
+        })
+        .then((data) => {
+          if (data) {
             setName("");
             setManagerName("default");
             setId("");
@@ -154,9 +180,20 @@ export default function store() {
         .then((data) => {
           if (data) {
             setIsStoreChanged(!isStoreChanged);
+          }
+        })
+        .catch((error) => console.log(error));
+
+      axios
+        .post("http://localhost:5000/tracking/save", {
+          username: "Mohammed",
+          action: `Add New Store with Name (${name})`,
+        })
+        .then((data) => {
+          if (data) {
             setName("");
             setManagerName("default");
-            //setId("");
+            setId("");
           }
         })
         .catch((error) => console.log(error));
@@ -179,7 +216,6 @@ export default function store() {
   useEffect(() => {
     if (updateId !== "") {
       checkStoreUpdate(defaultStoreName);
-      //defaultStoreName
     }
   }, [updateId]);
 
@@ -213,7 +249,8 @@ export default function store() {
       });
   }
 
-  function deleteStore(id) {
+  function deleteStore(id, name) {
+    console.log(id, name);
     axios
       .put("http://localhost:5000/stores/delete/" + id, {
         isDeleted: true,
@@ -224,6 +261,14 @@ export default function store() {
           setIsStoreChanged(!isStoreChanged);
         }
       })
+      .catch((error) => console.log(error));
+
+    axios
+      .post("http://localhost:5000/tracking/save", {
+        username: "Mohammed",
+        action: `Delete Store with Name (${name})`,
+      })
+      .then()
       .catch((error) => console.log(error));
   }
 
@@ -239,12 +284,23 @@ export default function store() {
         })
         .then((data) => {
           if (data) {
+            getProducts(defaultStoreName);
+          }
+        })
+        .catch((error) => console.log(error));
+
+      axios
+        .post("http://localhost:5000/tracking/save", {
+          username: "Mohammed",
+          action: `Update Data of Product (${productName})`,
+        })
+        .then((data) => {
+          if (data) {
             setProductName("");
             setProductBarcode("");
             setProductPrice("");
             setProductQuantity("");
             setUpdateProductId("");
-            getProducts(defaultStoreName);
           }
         })
         .catch((error) => console.log(error));
@@ -259,16 +315,37 @@ export default function store() {
         })
         .then((data) => {
           if (data) {
+            getProducts(defaultStoreName);
+          }
+        })
+        .catch((error) => console.log(error));
+
+      axios
+        .post("http://localhost:5000/tracking/save", {
+          username: "Mohammed",
+          action: `Add New Product with Name (${productName})`,
+        })
+        .then((data) => {
+          if (data) {
             setProductName("");
             setProductBarcode("");
             setProductPrice(0);
             setProductQuantity(0);
             setUpdateProductId("");
-            getProducts(defaultStoreName);
           }
         })
         .catch((error) => console.log(error));
     }
+  }
+
+  const [deletedProduct, setDeletedProduct] = useState("");
+
+  async function getDeletedProductName(id) {
+    const deletedData = await fetch(
+      "http://localhost:5000/products/show/" + id
+    );
+    const found = await deletedData.json();
+    setDeletedProduct(found[0].name);
   }
 
   function deleteProduct(id) {
@@ -283,18 +360,25 @@ export default function store() {
         }
       })
       .catch((error) => console.log(error));
+
+    axios
+      .post("http://localhost:5000/tracking/save", {
+        username: "Mohammed",
+        action: `Delete Product with Name (${deletedProduct})`,
+      })
+      .then()
+      .catch((error) => console.log(error));
   }
 
   function checkStoreDelete(name) {
     fetch("http://localhost:5000/products/show/byName/" + name)
       .then((response) => response.json())
       .then((data) => {
-        console.log(data);
         if (data.length > 0) {
           setErrorDisplay(true);
           setDisplayStoreDelete(false);
         } else {
-          deleteStore(deletedStoreId);
+          deleteStore(deletedStoreId, name);
           setErrorDisplay(false);
           setDisplayStoreDelete(false);
         }
@@ -310,18 +394,7 @@ export default function store() {
             <Row>
               <Col></Col>
               <Col></Col>
-              <Col>
-                <Button
-                  variant="primary"
-                  className={styles.btnExport}
-                // onClick={() => {
-                //   getNewProducts();
-                //   setShowExportAndSupply(true);
-                // }}
-                >
-                  User Tracking
-                </Button>
-              </Col>
+              <Col></Col>
               <Col>
                 <Button
                   variant="primary"
@@ -331,7 +404,16 @@ export default function store() {
                     setShowExportAndSupply(true);
                   }}
                 >
-                  Sale and supply products
+                  <Row>
+                    <Col xs={8}>Sale and supply</Col>
+                    <Col xs={4}>
+                      <Image
+                        src="/img/purchase.png"
+                        width="50px"
+                        height="50px"
+                      />
+                    </Col>
+                  </Row>
                 </Button>
               </Col>
             </Row>
@@ -377,10 +459,14 @@ export default function store() {
                   className={styles.btnAdd}
                   onClick={() => {
                     validationInput();
-                    // addStore();
                   }}
                 >
-                  Add Store
+                  <Row>
+                    <Col xs={8}>Add Store</Col>
+                    <Col xs={4}>
+                      <Image src="/img/plus.png" width="30px" height="30px" />
+                    </Col>
+                  </Row>
                 </Button>
               </Col>
               <Col>
@@ -393,7 +479,12 @@ export default function store() {
                     setId("");
                   }}
                 >
-                  Clear Data
+                  <Row>
+                    <Col xs={8}>Clear Data</Col>
+                    <Col xs={4}>
+                      <Image src="/img/clear.png" width="30px" height="30px" />
+                    </Col>
+                  </Row>
                 </Button>
               </Col>
             </Row>
@@ -554,10 +645,15 @@ export default function store() {
                 <Button
                   className={styles.btnSave}
                   onClick={() => {
-                    addProduct();
+                    validationInputProduct();
                   }}
                 >
-                  Save
+                  <Row>
+                    <Col xs={8}>Save</Col>
+                    <Col xs={4}>
+                      <Image src="/img/plus.png" width="50px" height="50px" />
+                    </Col>
+                  </Row>
                 </Button>
               </Col>
             </Row>
@@ -587,20 +683,16 @@ export default function store() {
                             <td>
                               <Button
                                 className={styles.btnEdit}
-                                onClick={() => {
-                                  updateStore(store._id);
-                                }}
+                                onClick={() => updateProduct(product._id)}
                               >
-                                <FaRegEdit
-                                  className={styles.FaRegEdit}
-                                  onClick={() => updateProduct(product._id)}
-                                />
+                                <FaRegEdit className={styles.FaRegEdit} />
                               </Button>
                             </td>
                             <td>
                               <Button
                                 className={styles.btnEdit}
                                 onClick={() => {
+                                  getDeletedProductName(product._id);
                                   setDeletedId(product._id);
                                   setDisplay(true);
                                 }}
@@ -694,7 +786,7 @@ export default function store() {
                         type="text"
                         placeholder="Enter customer name"
                         autoComplete="off"
-                      // onChange={(e) => setProductName(e.target.value)}
+                        // onChange={(e) => setProductName(e.target.value)}
                       />
                     </Form.Group>
                   </Col>
@@ -745,8 +837,8 @@ export default function store() {
                         type="text"
                         placeholder="Enter sale quantity"
                         autoComplete="off"
-                      // value=""
-                      // onChange={(e) => setProductName(e.target.value)}
+                        // value=""
+                        // onChange={(e) => setProductName(e.target.value)}
                       />
                     </Form.Group>
                   </Col>
@@ -787,14 +879,9 @@ export default function store() {
                                 <td>
                                   <Button
                                     className={styles.btnEdit}
-                                    onClick={() => {
-                                      updateStore(store._id);
-                                    }}
+                                    onClick={() => updateProduct(product._id)}
                                   >
-                                    <FaRegEdit
-                                      className={styles.FaRegEdit}
-                                      onClick={() => updateProduct(product._id)}
-                                    />
+                                    <FaRegEdit className={styles.FaRegEdit} />
                                   </Button>
                                 </td>
                                 <td>
@@ -929,14 +1016,9 @@ export default function store() {
                                 <td>
                                   <Button
                                     className={styles.btnEdit}
-                                    onClick={() => {
-                                      updateStore(store._id);
-                                    }}
+                                    onClick={() => updateProduct(product._id)}
                                   >
-                                    <FaRegEdit
-                                      className={styles.FaRegEdit}
-                                      onClick={() => updateProduct(product._id)}
-                                    />
+                                    <FaRegEdit className={styles.FaRegEdit} />
                                   </Button>
                                 </td>
                                 <td>
@@ -958,302 +1040,6 @@ export default function store() {
                   </Col>
                 </Row>
               </Container>
-            </Tab>
-            <Tab eventKey="returned" title="Returned">
-              <Tabs
-                defaultActiveKey="home"
-                id="uncontrolled-tab-example"
-                className="mb-3"
-              >
-                <Tab eventKey="used" title="Used">
-                  <Container>
-                    <Row>
-                      <Col>
-                        <Form.Group className="mb-3">
-                          <Form.Label>
-                            Name<span>*</span>
-                          </Form.Label>
-                          <Form.Control
-                            type="text"
-                            placeholder="Enter store name"
-                            autoComplete="off"
-                            value={productName}
-                            onChange={(e) => setProductName(e.target.value)}
-                          />
-                        </Form.Group>
-                      </Col>
-                      <Col>
-                        <Form.Group className="mb-3">
-                          <Form.Label>
-                            Barcode<span>*</span>
-                          </Form.Label>
-                          <Form.Control
-                            type="text"
-                            placeholder="Enter product barcode"
-                            autoComplete="off"
-                            value={productBarcode}
-                            onChange={(e) => setProductBarcode(e.target.value)}
-                          />
-                        </Form.Group>
-                      </Col>
-                      <Col>
-                        <Form.Group className="mb-3">
-                          <Form.Label>
-                            Price<span>*</span>
-                          </Form.Label>
-                          <Form.Control
-                            type="text"
-                            placeholder="Enter product price"
-                            autoComplete="off"
-                            value={productPrice}
-                            onChange={(e) => setProductPrice(e.target.value)}
-                          />
-                        </Form.Group>
-                      </Col>
-                    </Row>
-                    <Row>
-                      <Col>
-                        <Form.Group className="mb-3">
-                          <Form.Label>
-                            Quantity<span>*</span>
-                          </Form.Label>
-                          <Form.Control
-                            type="text"
-                            placeholder="Enter store quantity"
-                            autoComplete="off"
-                            value={productQuantity}
-                            onChange={(e) => setProductQuantity(e.target.value)}
-                          />
-                        </Form.Group>
-                      </Col>
-                      <Col>
-                        <Form.Group className="mb-3">
-                          <Form.Label>
-                            Store Name<span>*</span>
-                          </Form.Label>
-                          <Form.Control
-                            type="text"
-                            value={defaultStoreName}
-                            placeholder="Enter store quantity"
-                            disabled
-                            autoComplete="off"
-                          />
-                        </Form.Group>
-                      </Col>
-                      <Col>
-                        <Button
-                          className={styles.btnSave}
-                          onClick={() => {
-                            addProduct();
-                          }}
-                        >
-                          Save
-                        </Button>
-                      </Col>
-                    </Row>
-                    <hr></hr>
-                    <Row>
-                      <Col>
-                        <Table striped bordered hover className={styles.table}>
-                          <thead>
-                            <tr>
-                              <th>Product Name</th>
-                              <th>Barcode</th>
-                              <th>Price</th>
-                              <th>Quantity</th>
-                              <th>Edit</th>
-                              <th>Delete</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {products &&
-                              products.map((product) => {
-                                return (
-                                  <tr>
-                                    <td>{product.name}</td>
-                                    <td>{product.barcode}</td>
-                                    <td>{product.price}</td>
-                                    <td>{product.quantity}</td>
-                                    <td>
-                                      <Button
-                                        className={styles.btnEdit}
-                                        onClick={() => {
-                                          updateStore(store._id);
-                                        }}
-                                      >
-                                        <FaRegEdit
-                                          className={styles.FaRegEdit}
-                                          onClick={() =>
-                                            updateProduct(product._id)
-                                          }
-                                        />
-                                      </Button>
-                                    </td>
-                                    <td>
-                                      <Button
-                                        className={styles.btnEdit}
-                                        onClick={() => {
-                                          setDeletedId(product._id);
-                                          setDisplay(true);
-                                        }}
-                                      >
-                                        <VscTrash className={styles.VscTrash} />
-                                      </Button>
-                                    </td>
-                                  </tr>
-                                );
-                              })}
-                          </tbody>
-                        </Table>
-                      </Col>
-                    </Row>
-                  </Container>
-                </Tab>
-                <Tab eventKey="damaged" title="Damaged">
-                  <Container>
-                    <Row>
-                      <Col>
-                        <Form.Group className="mb-3">
-                          <Form.Label>
-                            Name<span>*</span>
-                          </Form.Label>
-                          <Form.Control
-                            type="text"
-                            placeholder="Enter store name"
-                            autoComplete="off"
-                            value={productName}
-                            onChange={(e) => setProductName(e.target.value)}
-                          />
-                        </Form.Group>
-                      </Col>
-                      <Col>
-                        <Form.Group className="mb-3">
-                          <Form.Label>
-                            Barcode<span>*</span>
-                          </Form.Label>
-                          <Form.Control
-                            type="text"
-                            placeholder="Enter product barcode"
-                            autoComplete="off"
-                            value={productBarcode}
-                            onChange={(e) => setProductBarcode(e.target.value)}
-                          />
-                        </Form.Group>
-                      </Col>
-                      <Col>
-                        <Form.Group className="mb-3">
-                          <Form.Label>
-                            Price<span>*</span>
-                          </Form.Label>
-                          <Form.Control
-                            type="text"
-                            placeholder="Enter product price"
-                            autoComplete="off"
-                            value={productPrice}
-                            onChange={(e) => setProductPrice(e.target.value)}
-                          />
-                        </Form.Group>
-                      </Col>
-                    </Row>
-                    <Row>
-                      <Col>
-                        <Form.Group className="mb-3">
-                          <Form.Label>
-                            Quantity<span>*</span>
-                          </Form.Label>
-                          <Form.Control
-                            type="text"
-                            placeholder="Enter store quantity"
-                            autoComplete="off"
-                            value={productQuantity}
-                            onChange={(e) => setProductQuantity(e.target.value)}
-                          />
-                        </Form.Group>
-                      </Col>
-                      <Col>
-                        <Form.Group className="mb-3">
-                          <Form.Label>
-                            Store Name<span>*</span>
-                          </Form.Label>
-                          <Form.Control
-                            type="text"
-                            value={defaultStoreName}
-                            placeholder="Enter store quantity"
-                            disabled
-                            autoComplete="off"
-                          />
-                        </Form.Group>
-                      </Col>
-                      <Col>
-                        <Button
-                          className={styles.btnSave}
-                          onClick={() => {
-                            addProduct();
-                          }}
-                        >
-                          Save
-                        </Button>
-                      </Col>
-                    </Row>
-                    <hr></hr>
-                    <Row>
-                      <Col>
-                        <Table striped bordered hover className={styles.table}>
-                          <thead>
-                            <tr>
-                              <th>Product Name</th>
-                              <th>Barcode</th>
-                              <th>Price</th>
-                              <th>Quantity</th>
-                              <th>Edit</th>
-                              <th>Delete</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {products &&
-                              products.map((product) => {
-                                return (
-                                  <tr>
-                                    <td>{product.name}</td>
-                                    <td>{product.barcode}</td>
-                                    <td>{product.price}</td>
-                                    <td>{product.quantity}</td>
-                                    <td>
-                                      <Button
-                                        className={styles.btnEdit}
-                                        onClick={() => {
-                                          updateStore(store._id);
-                                        }}
-                                      >
-                                        <FaRegEdit
-                                          className={styles.FaRegEdit}
-                                          onClick={() =>
-                                            updateProduct(product._id)
-                                          }
-                                        />
-                                      </Button>
-                                    </td>
-                                    <td>
-                                      <Button
-                                        className={styles.btnEdit}
-                                        onClick={() => {
-                                          setDeletedId(product._id);
-                                          setDisplay(true);
-                                        }}
-                                      >
-                                        <VscTrash className={styles.VscTrash} />
-                                      </Button>
-                                    </td>
-                                  </tr>
-                                );
-                              })}
-                          </tbody>
-                        </Table>
-                      </Col>
-                    </Row>
-                  </Container>
-                </Tab>
-              </Tabs>
             </Tab>
           </Tabs>
         </Modal.Body>
