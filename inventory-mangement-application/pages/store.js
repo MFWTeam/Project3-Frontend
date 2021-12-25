@@ -145,55 +145,70 @@ export default function store() {
   }
 
   function addStore() {
+    const token = JSON.parse(localStorage.getItem("token"));
     if (updateId) {
       axios
-        .put("http://localhost:5000/stores/update/" + updateId, {
-          name: name,
-          managerName: managerName,
-        })
+        .put(
+          "http://localhost:5000/stores/update/" + updateId,
+          {
+            name: name,
+            managerName: managerName,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        )
         .then((data) => {
           if (data) {
             setIsStoreChanged(!isStoreChanged);
-          }
-        })
-        .catch((error) => console.log(error));
-
-      axios
-        .post("http://localhost:5000/tracking/save", {
-          username: "Mohammed",
-          action: `Update Data of Store (${name})`,
-        })
-        .then((data) => {
-          if (data) {
-            setName("");
-            setManagerName("default");
-            setId("");
+            axios
+              .post("http://localhost:5000/tracking/save", {
+                username: data.data.token.name,
+                action: `Update Data of Store (${name})`,
+              })
+              .then((data) => {
+                if (data) {
+                  setName("");
+                  setManagerName("default");
+                  setId("");
+                }
+              })
+              .catch((error) => console.log(error));
           }
         })
         .catch((error) => console.log(error));
     } else {
       axios
-        .post("http://localhost:5000/stores/save", {
-          name: name,
-          managerName: managerName,
-        })
+        .post(
+          "http://localhost:5000/stores/save",
+          {
+            name: name,
+            managerName: managerName,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        )
         .then((data) => {
           if (data) {
             setIsStoreChanged(!isStoreChanged);
-          }
-        })
-        .catch((error) => console.log(error));
-
-      axios
-        .post("http://localhost:5000/tracking/save", {
-          username: "Mohammed",
-          action: `Add New Store with Name (${name})`,
-        })
-        .then((data) => {
-          if (data) {
-            setName("");
-            setManagerName("default");
-            setId("");
+            axios
+              .post("http://localhost:5000/tracking/save", {
+                username: data.data.token.name,
+                action: `Add New Store with Name (${name})`,
+              })
+              .then((data) => {
+                if (data) {
+                  setName("");
+                  setManagerName("default");
+                  setId("");
+                }
+              })
+              .catch((error) => console.log(error));
           }
         })
         .catch((error) => console.log(error));
@@ -250,88 +265,110 @@ export default function store() {
   }
 
   function deleteStore(id, name) {
-    console.log(id, name);
+    const token = JSON.parse(localStorage.getItem("token"));
     axios
-      .put("http://localhost:5000/stores/delete/" + id, {
-        isDeleted: true,
-      })
+      .put(
+        "http://localhost:5000/stores/delete/" + id,
+        {
+          isDeleted: true,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      )
       .then((data) => {
         if (data) {
           setDisplayStoreDelete(false);
           setIsStoreChanged(!isStoreChanged);
+          axios
+            .post("http://localhost:5000/tracking/save", {
+              username: data.data.token.name,
+              action: `Delete Store with Name (${name})`,
+            })
+            .then()
+            .catch((error) => console.log(error));
         }
       })
-      .catch((error) => console.log(error));
-
-    axios
-      .post("http://localhost:5000/tracking/save", {
-        username: "Mohammed",
-        action: `Delete Store with Name (${name})`,
-      })
-      .then()
       .catch((error) => console.log(error));
   }
 
   function addProduct() {
+    const token = JSON.parse(localStorage.getItem("token"));
     if (updateProductId) {
       axios
-        .put("http://localhost:5000/products/update/" + updateProductId, {
-          name: productName,
-          barcode: productBarcode,
-          price: productPrice,
-          quantity: productQuantity,
-          storeName: defaultStoreName,
-        })
+        .put(
+          "http://localhost:5000/products/update/" + updateProductId,
+          {
+            name: productName,
+            barcode: productBarcode,
+            price: productPrice,
+            quantity: productQuantity,
+            storeName: defaultStoreName,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        )
         .then((data) => {
           if (data) {
             getProducts(defaultStoreName);
-          }
-        })
-        .catch((error) => console.log(error));
-
-      axios
-        .post("http://localhost:5000/tracking/save", {
-          username: "Mohammed",
-          action: `Update Data of Product (${productName})`,
-        })
-        .then((data) => {
-          if (data) {
-            setProductName("");
-            setProductBarcode("");
-            setProductPrice("");
-            setProductQuantity("");
-            setUpdateProductId("");
+            axios
+              .post("http://localhost:5000/tracking/save", {
+                username: data.data.token.name,
+                action: `Update Data of Product (${productName})`,
+              })
+              .then((data) => {
+                if (data) {
+                  setProductName("");
+                  setProductBarcode("");
+                  setProductPrice("");
+                  setProductQuantity("");
+                  setUpdateProductId("");
+                }
+              })
+              .catch((error) => console.log(error));
           }
         })
         .catch((error) => console.log(error));
     } else {
       axios
-        .post("http://localhost:5000/products/save", {
-          name: productName,
-          barcode: productBarcode,
-          price: productPrice,
-          quantity: productQuantity,
-          storeName: defaultStoreName,
-        })
+        .post(
+          "http://localhost:5000/products/save",
+          {
+            name: productName,
+            barcode: productBarcode,
+            price: productPrice,
+            quantity: productQuantity,
+            storeName: defaultStoreName,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        )
         .then((data) => {
           if (data) {
             getProducts(defaultStoreName);
-          }
-        })
-        .catch((error) => console.log(error));
-
-      axios
-        .post("http://localhost:5000/tracking/save", {
-          username: "Mohammed",
-          action: `Add New Product with Name (${productName})`,
-        })
-        .then((data) => {
-          if (data) {
-            setProductName("");
-            setProductBarcode("");
-            setProductPrice(0);
-            setProductQuantity(0);
-            setUpdateProductId("");
+            axios
+              .post("http://localhost:5000/tracking/save", {
+                username: data.data.token.name,
+                action: `Add New Product with Name (${productName})`,
+              })
+              .then((data) => {
+                if (data) {
+                  setProductName("");
+                  setProductBarcode("");
+                  setProductPrice(0);
+                  setProductQuantity(0);
+                  setUpdateProductId("");
+                }
+              })
+              .catch((error) => console.log(error));
           }
         })
         .catch((error) => console.log(error));
@@ -349,24 +386,32 @@ export default function store() {
   }
 
   function deleteProduct(id) {
+    const token = JSON.parse(localStorage.getItem("token"));
     axios
-      .put("http://localhost:5000/products/delete/" + id, {
-        isDeleted: true,
-      })
+      .put(
+        "http://localhost:5000/products/delete/" + id,
+        {
+          isDeleted: true,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      )
       .then((data) => {
         if (data) {
           setDisplay(false);
           getProducts(defaultStoreName);
+          axios
+            .post("http://localhost:5000/tracking/save", {
+              username: data.data.token.name,
+              action: `Delete Product with Name (${deletedProduct})`,
+            })
+            .then()
+            .catch((error) => console.log(error));
         }
       })
-      .catch((error) => console.log(error));
-
-    axios
-      .post("http://localhost:5000/tracking/save", {
-        username: "Mohammed",
-        action: `Delete Product with Name (${deletedProduct})`,
-      })
-      .then()
       .catch((error) => console.log(error));
   }
 
@@ -391,7 +436,7 @@ export default function store() {
       <div className={styles.container}>
         <main className={styles.main}>
           <Container>
-            <Row>
+            {/* <Row>
               <Col></Col>
               <Col></Col>
               <Col></Col>
@@ -416,7 +461,7 @@ export default function store() {
                   </Row>
                 </Button>
               </Col>
-            </Row>
+            </Row> */}
             <Row>
               <Col>
                 <Form.Group className="mb-3">
