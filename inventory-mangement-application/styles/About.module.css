@@ -2,11 +2,10 @@
   background: linear-gradient(-45deg, #fff, #87d3ba, #c4e9dc, #fff);
   background-size: 400% 400%;
   animation: gradient 15s ease infinite;
-  height: 91vh;
   padding: 0 2rem;
 }
 
-@keyframes gradient {
+/* @keyframes gradient {
   0% {
     background-position: 0% 50%;
   }
@@ -16,7 +15,7 @@
   100% {
     background-position: 0% 50%;
   }
-}
+} */
 
 .main {
   min-height: 91vh;
@@ -29,11 +28,17 @@
 }
 
 .grid {
-  width: 700px;
+  max-width: 700px;
   text-align: justify;
 }
 
 .grid h1 {
   text-align: center;
   text-transform: uppercase;
+}
+
+@media only screen and (max-width: 600px) {
+  .main {
+    min-height: 85vh;
+  }
 }

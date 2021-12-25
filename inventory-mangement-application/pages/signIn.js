@@ -3,27 +3,39 @@ import React, { useState } from "react";
 import Router from "next/router";
 import Image from "next/image";
 import axios from "axios";
-import { Form, Button, Container, Row, Col, Card, Link } from "react-bootstrap";
+import { Form, Card, Alert } from "react-bootstrap";
 
 export default function signIn() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  // Alert
+  const [wrong, setWrong] = useState(false);
+  const [empty, setEmpty] = useState(false);
+  // Alert
+
   function signIn() {
-    axios
-      .post("http://localhost:5000/users/signIn", {
-        email: email,
-        password: password,
-      })
-      .then((response) => {
-        if (response.data.message !== "data is incorrect") {
-          localStorage.setItem("token", JSON.stringify(response.data.token));
-          Router.push("/");
-        } else {
-          console.log(response);
-        }
-      })
-      .catch((error) => console.log(error));
+    if (email !== "" && password !== "") {
+      axios
+        .post("http://localhost:5000/users/signIn", {
+          email: email,
+          password: password,
+        })
+        .then((response) => {
+          if (response.data.message !== "data is incorrect") {
+            localStorage.setItem("token", JSON.stringify(response.data.token));
+            setWrong(false);
+            Router.push("/");
+          } else {
+            setEmpty(false);
+            setWrong(true);
+          }
+        })
+        .catch((error) => console.log("error", error));
+    } else {
+      setEmpty(true);
+      setWrong(false);
+    }
   }
 
   return (
@@ -39,6 +51,18 @@ export default function signIn() {
         <div className={styles.loginContent}>
           <Card>
             <Card.Body>
+              <Alert
+                variant="danger"
+                className={wrong ? styles.displayBlock : styles.displayNone}
+              >
+                Email or password is incorrect
+              </Alert>
+              <Alert
+                variant="danger"
+                className={empty ? styles.displayBlock : styles.displayNone}
+              >
+                Fields Can Not Be Empty
+              </Alert>
               <Image src="/img/avatar.png" width="100px" height="100px" />
               <hr />
               <Card.Text>

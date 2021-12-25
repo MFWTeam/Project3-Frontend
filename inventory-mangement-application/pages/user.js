@@ -342,10 +342,10 @@ const users = () => {
         <main className={styles.main}>
           <Container>
             <Row>
-              <Col></Col>
-              <Col></Col>
-              <Col></Col>
-              <Col>
+              <Col xs={6} md={3}></Col>
+              <Col xs={6} md={3}></Col>
+              <Col xs={6} md={3}></Col>
+              <Col xs={6} md={3}>
                 <Button
                   variant="primary"
                   className={styles.btnTracking}
@@ -367,7 +367,7 @@ const users = () => {
               </Col>
             </Row>
             <Row>
-              <Col>
+              <Col xs={6} md={3}>
                 <Form.Group className="mb-3">
                   <Form.Label>
                     Name<span>*</span>
@@ -381,7 +381,7 @@ const users = () => {
                   />
                 </Form.Group>
               </Col>
-              <Col>
+              <Col xs={6} md={3}>
                 <Form.Group className="mb-3">
                   <Form.Label>
                     Email<span>*</span>
@@ -395,7 +395,7 @@ const users = () => {
                   />
                 </Form.Group>
               </Col>
-              <Col>
+              <Col xs={6} md={3}>
                 <Form.Group className="mb-3">
                   <Form.Label>
                     Password<span>*</span>
@@ -410,7 +410,7 @@ const users = () => {
                   />
                 </Form.Group>
               </Col>
-              <Col>
+              <Col xs={6} md={3}>
                 <Form.Group className="mb-3">
                   <Form.Label>Address</Form.Label>
                   <Form.Control
@@ -425,7 +425,7 @@ const users = () => {
             </Row>
 
             <Row>
-              <Col>
+              <Col xs={6} md={3}>
                 <Form.Group className="mb-3">
                   <Form.Label>Phone</Form.Label>
                   <Form.Control
@@ -436,7 +436,7 @@ const users = () => {
                   />
                 </Form.Group>
               </Col>
-              <Col>
+              <Col xs={6} md={3}>
                 <Form.Group className="mb-3">
                   <Form.Label>
                     Role<span>*</span>
@@ -457,7 +457,7 @@ const users = () => {
                   </Form.Select>
                 </Form.Group>
               </Col>
-              <Col>
+              <Col xs={6} md={3}>
                 <Button
                   variant="primary"
                   className={styles.btnAdd}
@@ -474,7 +474,7 @@ const users = () => {
                   </Row>
                 </Button>
               </Col>
-              <Col>
+              <Col xs={6} md={3}>
                 <Button
                   variant="primary"
                   className={styles.btnAdd}
@@ -669,7 +669,7 @@ const users = () => {
         <Modal.Body>
           <Container>
             <Row>
-              <Col>
+              <Col xs={12} md={4}>
                 <Form.Group className="mb-3">
                   <Form.Label>
                     Name<span>*</span>
@@ -684,7 +684,7 @@ const users = () => {
                   />
                 </Form.Group>
               </Col>
-              <Col>
+              <Col xs={12} md={4}>
                 <Form.Group className="mb-3">
                   <Form.Label>
                     Email<span>*</span>
@@ -699,7 +699,7 @@ const users = () => {
                   />
                 </Form.Group>
               </Col>
-              <Col>
+              <Col xs={12} md={4}>
                 <Form.Group className="mb-3">
                   <Form.Label>Address</Form.Label>
                   <Form.Control
@@ -751,7 +751,7 @@ const users = () => {
             </Row>
             <hr />
             <Row>
-              <Col>
+              <Col xs={12} md={4}>
                 <Form.Group className="mb-3">
                   <Form.Label>Current Password</Form.Label>
                   <Form.Control
@@ -762,7 +762,7 @@ const users = () => {
                   />
                 </Form.Group>
               </Col>
-              <Col>
+              <Col xs={12} md={4}>
                 <Form.Group className="mb-3">
                   <Form.Label>New Password</Form.Label>
                   <Form.Control
@@ -773,7 +773,7 @@ const users = () => {
                   />
                 </Form.Group>
               </Col>
-              <Col>
+              <Col xs={12} md={4}>
                 <Form.Group className="mb-3">
                   <Form.Label>Confirm New Password</Form.Label>
                   <Form.Control

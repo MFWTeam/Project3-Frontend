@@ -463,7 +463,7 @@ export default function store() {
               </Col>
             </Row> */}
             <Row>
-              <Col>
+              <Col xs={12} md={3}>
                 <Form.Group className="mb-3">
                   <Form.Label>
                     Store Name<span>*</span>
@@ -477,7 +477,7 @@ export default function store() {
                   />
                 </Form.Group>
               </Col>
-              <Col>
+              <Col xs={12} md={3}>
                 <Form.Group className="mb-3">
                   <Form.Label>
                     Manager Name<span>*</span>
@@ -498,7 +498,7 @@ export default function store() {
                   </Form.Select>
                 </Form.Group>
               </Col>
-              <Col>
+              <Col xs={12} md={3}>
                 <Button
                   variant="primary"
                   className={styles.btnAdd}
@@ -514,7 +514,7 @@ export default function store() {
                   </Row>
                 </Button>
               </Col>
-              <Col>
+              <Col xs={12} md={3}>
                 <Button
                   variant="primary"
                   className={styles.btnAdd}
@@ -603,7 +603,13 @@ export default function store() {
       <Modal
         size="lg"
         show={show}
-        onHide={() => setShow(false)}
+        onHide={() => {
+          setShow(false);
+          setProductName("");
+          setProductBarcode("");
+          setProductPrice("");
+          setProductQuantity("");
+        }}
         aria-labelledby="example-modal-sizes-title-lg"
       >
         <Modal.Header closeButton>
@@ -755,6 +761,7 @@ export default function store() {
           </Container>
         </Modal.Body>
       </Modal>
+
       <SweetAlert
         warning
         show={display}

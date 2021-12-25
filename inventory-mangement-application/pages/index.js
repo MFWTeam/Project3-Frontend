@@ -13,11 +13,26 @@ import { useRouter } from "next/router";
 export default function Home() {
   const router = useRouter();
 
+  const [userName, setUserName] = useState("");
+  const [role, setRole] = useState("");
+
   useEffect(async () => {
     const token = await JSON.parse(localStorage.getItem("token"));
     if (token === null) {
       router.push("/signIn");
     } else {
+      fetch("http://localhost:5000/users/getDataFromToken", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          console.log(data);
+          setUserName(data.token.name);
+          setRole(data.token.role);
+        })
+        .catch((err) => console.log(err));
     }
   }, []);
 
@@ -111,6 +126,7 @@ export default function Home() {
 
   return (
     <Layout>
+      <h3 className={styles.welcome}>Welcome: {userName}</h3>
       <div className={styles.body}>
         <div className={styles.container}>
           <Link href="/store">
@@ -128,22 +144,34 @@ export default function Home() {
             </div>
           </Link>
 
-          <Link href="/user">
-            <div className={styles.card}>
-              <div className={styles.box}>
-                <div className={styles.content}>
-                  <Image src="/img/man.png" width="100px" height="100px" />
-                  <h3>User</h3>
+          <div
+            className={
+              role !== "Admin" ? styles.displayNone : styles.displayBlock
+            }
+          >
+            <Link href="/user">
+              <div className={styles.card}>
+                <div className={styles.box}>
+                  <div className={styles.content}>
+                    <Image src="/img/man.png" width="100px" height="100px" />
+                    <h3>User</h3>
+                  </div>
                 </div>
               </div>
-            </div>
-          </Link>
+            </Link>
+          </div>
 
-          <div className={styles.card} onClick={handleShowRole}>
-            <div className={styles.box}>
-              <div className={styles.content}>
-                <Image src="/img/shield.png" width="100px" height="100px" />
-                <h3>Role</h3>
+          <div
+            className={
+              role !== "Admin" ? styles.displayNone : styles.displayBlock
+            }
+          >
+            <div className={styles.card} onClick={handleShowRole}>
+              <div className={styles.box}>
+                <div className={styles.content}>
+                  <Image src="/img/shield.png" width="100px" height="100px" />
+                  <h3>Role</h3>
+                </div>
               </div>
             </div>
           </div>
