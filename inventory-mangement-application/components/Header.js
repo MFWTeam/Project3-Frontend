@@ -17,7 +17,7 @@ export default function Header() {
       setIsLoggedIn("block");
       setIsLoggedOut("none");
     }
-  }, [token]);
+  }, []);
 
   return (
     <>

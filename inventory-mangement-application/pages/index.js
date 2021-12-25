@@ -17,6 +17,7 @@ export default function Home() {
     const token = await JSON.parse(localStorage.getItem("token"));
     if (token === null) {
       router.push("/signIn");
+    } else {
     }
   }, []);
 
