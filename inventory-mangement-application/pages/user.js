@@ -756,6 +756,7 @@ const users = () => {
                   <Form.Label>Current Password</Form.Label>
                   <Form.Control
                     placeholder="Enter Current Password"
+                    type="password"
                     autoComplete="off"
                     value={userCurrentPassword}
                     onChange={(e) => setUserCurrentPassword(e.target.value)}
@@ -767,6 +768,7 @@ const users = () => {
                   <Form.Label>New Password</Form.Label>
                   <Form.Control
                     placeholder="Enter New Password"
+                    type="password"
                     autoComplete="off"
                     value={userNewPassword}
                     onChange={(e) => setUserNewPassword(e.target.value)}
@@ -778,6 +780,7 @@ const users = () => {
                   <Form.Label>Confirm New Password</Form.Label>
                   <Form.Control
                     placeholder="Confirm New Password"
+                    type="password"
                     autoComplete="off"
                     value={userConfirmNewPassword}
                     onChange={(e) => setUserConfirmNewPassword(e.target.value)}
